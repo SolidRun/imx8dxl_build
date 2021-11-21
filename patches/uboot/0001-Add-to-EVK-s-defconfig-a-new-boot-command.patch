@@ -1,0 +1,48 @@
+From ba9d36aece2298f86b99c9681f608507bf5a982b Mon Sep 17 00:00:00 2001
+From: Alvaro-Karsz <alvaro.karsz@solid-run.com>
+Date: Sun, 21 Nov 2021 18:05:45 +0200
+Subject: [PATCH] Add to EVK's defconfig a new boot command
+
+---
+ configs/imx8dxl_evk_defconfig | 7 +++++++
+ include/configs/imx8dxl_evk.h | 2 ++
+ 2 files changed, 9 insertions(+)
+
+diff --git a/configs/imx8dxl_evk_defconfig b/configs/imx8dxl_evk_defconfig
+index 7ad06d85..bf32764f 100644
+--- a/configs/imx8dxl_evk_defconfig
++++ b/configs/imx8dxl_evk_defconfig
+@@ -160,3 +160,10 @@ CONFIG_BOOTAUX_RESERVED_MEM_SIZE=0x08000000
+ CONFIG_OF_LIBFDT_OVERLAY=y
+ 
+ CONFIG_SNVS_SEC_SC=y
++
++
++CONFIG_CMD_FS_GENERIC=y
++CONFIG_ENV_VARS_UBOOT_CONFIG=y
++CONFIG_USE_BOOTCOMMAND=y
++CONFIG_BOOTCOMMAND="mmc dev 1; load mmc 1:1 ${loadaddr}  boot/Image; load mmc 1:1 ${fdt_addr} boot/imx8dxl-evk.dtb; load mmc 1:1 ${initrd_addr} boot/rootfs.cpio; booti ${loadaddr} ${initrd_addr} ${fdt_addr}"
++
+diff --git a/include/configs/imx8dxl_evk.h b/include/configs/imx8dxl_evk.h
+index 4d2df359..b1b7f1be 100644
+--- a/include/configs/imx8dxl_evk.h
++++ b/include/configs/imx8dxl_evk.h
+@@ -231,6 +231,7 @@
+ 		"fi;\0"
+ #endif
+ 
++#ifndef CONFIG_BOOTCOMMAND
+ #ifdef CONFIG_NAND_BOOT
+ #define CONFIG_BOOTCOMMAND \
+ 	"nand read ${loadaddr} 0x9000000 0x2000000;"\
+@@ -256,6 +257,7 @@
+ 		   "fi; " \
+ 	   "else booti ${loadaddr} - ${fdt_addr}; fi"
+ #endif
++#endif
+ 
+ /* Link Definitions */
+ #define CONFIG_LOADADDR			0x80280000
+-- 
+2.25.1
+
