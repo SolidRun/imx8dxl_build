@@ -131,6 +131,6 @@ Distro-Boot support is not currently enabled for the Bootloader.
 In order to start Linux from the u-boot commandline, the following commands are required:
 
 ext4load mmc 0:1 ${loadaddr} /boot/Image
-ext4load mmc 0:1 ${fdt_addr} /boot/imx8dxl-evk.dtb
+ext4load mmc 0:1 ${fdt_addr} /boot/imx8dxl-v2x.dtb
 setenv bootargs console=ttyLP0,115200 earlycon root=/dev/mmcblk0p1
 booti ${loadaddr} - ${fdt_addr}

@@ -1,0 +1,31 @@
+From 6f4a2fe897e37ea8165e1174983e31e8e1640347 Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Sun, 24 Jul 2022 13:12:28 +0300
+Subject: [PATCH] HACK: arm64: dts: imx8dxl: disable flexspi0 to allow
+ configuring pins
+
+Apparently the SCU refuses to reconfigure QSPI pins as GPIOs if they
+were initially configured for SPI in U-Boot.
+Disable the flexspi node to avoid configuring the pins for spi.
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ arch/arm/dts/fsl-imx8dxl-evk.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/dts/fsl-imx8dxl-evk.dts b/arch/arm/dts/fsl-imx8dxl-evk.dts
+index 961f8b0001..fa50e71fe0 100644
+--- a/arch/arm/dts/fsl-imx8dxl-evk.dts
++++ b/arch/arm/dts/fsl-imx8dxl-evk.dts
+@@ -445,7 +445,7 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_flexspi0>;
+ 	nxp,fspi-dll-slvdly = <4>;
+-	status = "okay";
++	status = "disabled";
+ 
+ 	flash0: mt35xu512aba@0 {
+ 		reg = <0>;
+-- 
+2.37.1
+
