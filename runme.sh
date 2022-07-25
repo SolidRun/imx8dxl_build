@@ -242,6 +242,9 @@ dd if=disk.raw of=rootfs.e2 ibs=1024 skip=131072 obs=4096
 # copy kernel into rootfs
 find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
+# Add files from overlay, if any
+find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+
 # assemble final disk image
 dd of="${ROOTDIR}/images/emmc.img" if=disk.raw bs=1024 count=131072
 dd of="${ROOTDIR}/images/emmc.img" if=rootfs.e2 ibs=4096 seek=131072 obs=1024
