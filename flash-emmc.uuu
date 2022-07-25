@@ -6,4 +6,6 @@ FB: ucmd setenv fastboot_dev mmc
 FB: ucmd setenv mmcdev 0
 FB: ucmd mmc dev 0
 FB: flash -raw2sparse all images/emmc.img
+FB: flash bootloader images/uboot.bin
+FB: ucmd mmc partconf 0 0 1 1
 FB: done

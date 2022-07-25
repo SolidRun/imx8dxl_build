@@ -92,7 +92,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 1. Connect the serial console to the computer, and open it.
 2. Connect the first USB-OTG port via a type A to type A cable to the computer.
 3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
-4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the flash-emmc.uuu script, to write `images/emmc.img` to the eMMC:
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the flash-emmc.uuu script, to write `images/emmc.img` and `images/uboot.bin` to the eMMC:
    `[path-to-]uuu flash-emmc.uuu`
 5. Connect to power, or reset the device.
 6. The serial console should now provide access to the early boot log, and indicate writing to the eMMC:
@@ -130,7 +130,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 Distro-Boot support is not currently enabled for the Bootloader.
 In order to start Linux from the u-boot commandline, the following commands are required:
 
-ext4load mmc 0:1 ${loadaddr} /boot/Image
-ext4load mmc 0:1 ${fdt_addr} /boot/imx8dxl-v2x.dtb
-setenv bootargs console=ttyLP0,115200 earlycon root=/dev/mmcblk0p1
-booti ${loadaddr} - ${fdt_addr}
+    ext4load mmc 0:1 ${loadaddr} /boot/Image
+    ext4load mmc 0:1 ${fdt_addr} /boot/imx8dxl-v2x.dtb
+    setenv bootargs console=ttyLP0,115200 earlycon root=/dev/mmcblk0p1
+    booti ${loadaddr} - ${fdt_addr}
