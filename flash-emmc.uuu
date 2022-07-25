@@ -1,0 +1,9 @@
+uuu_version 1.2.39
+
+SDPS: boot -f images/uboot.bin
+
+FB: ucmd setenv fastboot_dev mmc
+FB: ucmd setenv mmcdev 0
+FB: ucmd mmc dev 0
+FB: flash -raw2sparse all images/emmc.img
+FB: done

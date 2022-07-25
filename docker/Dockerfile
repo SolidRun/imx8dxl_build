@@ -16,7 +16,7 @@ RUN set -e; \
 
 RUN set -e; \
 	apt-get update; \
-	apt-get -y install --no-install-recommends build-essential crossbuild-essential-arm64 wget make device-tree-compiler xz-utils sudo libssl-dev bison flex git bc ca-certificates; \
+	apt-get --no-install-recommends -y install bc bison build-essential ca-certificates crossbuild-essential-arm64 device-tree-compiler e2tools flex git kmod libssl-dev make sudo wget xz-utils; \
 	:
 
 # build environment

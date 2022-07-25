@@ -29,16 +29,16 @@ Simply running ./runme.sh, it will check for required tools, clone and build ima
 
 ## Boot via USB-OTG
 
-All steps in this section requiring using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
+All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
 
 ### U-Boot only
 
-0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC*
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC for the first time*
 1. Connect the serial console to the computer, and open it.
 2. Connect the first USB-OTG port via a type A to type A cable to the computer.
-3. Acquire the full path to the U-Boot binary (`build/mkimage/iMX8DXL/flash.bin`) or copy it next to the uuu binary.
-4. Instruct NXPs `uuu` command to send U-Boot:
-   `uuu [path-to-]flash.bin`
+3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to send U-Boot:
+   `[path-to-]uuu images/uboot.bin`
 5. Connect to power, or reset the device.
 6. The serial console should now provide access to the early boot log, and u-boot commandline:
 
@@ -84,6 +84,53 @@ All steps in this section requiring using NXPs `uuu` application to interface wi
 
    The last line indicates that the bootloader is waiting for further USB commands via the fastboot protocol. By pressing Ctrl+C the U-Boot commandline can be accessed instead.
 
-## Flash Bootloader to eMMC
+## Flash Disk Image to eMMC
 
-TBD explain, think about boot0/boot1, etc.
+All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
+
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC for the first time*
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the flash-emmc.uuu script, to write `images/emmc.img` to the eMMC:
+   `[path-to-]uuu flash-emmc.uuu`
+5. Connect to power, or reset the device.
+6. The serial console should now provide access to the early boot log, and indicate writing to the eMMC:
+
+       Run fastboot ...
+       auto usb 0
+       Detect USB boot. Will enter fastboot mode!
+       flash target is MMC:1
+       MMC: no card present
+       MMC card init failed!
+       MMC: no card present
+       ** Block device MMC 1 not supported
+       Detect USB boot. Will enter fastboot mode!
+       flash target is MMC:0
+       switch to partitions #0, OK
+       mmc0(part 0) is current device
+       Detect USB boot. Will enter fastboot mode!
+       Starting download of 16776232 bytes
+       ..........................................................................
+       .....................................................
+       downloading of 16776232 bytes finished
+       writing to partition 'all'
+       sparse flash target is mmc:0
+       writing to partition 'all' for sparse, buffer size 16776232
+       Flashing sparse image at offset 0
+       Flashing Sparse Image
+       ........ wrote 16776192 bytes to 'all'
+
+       ...
+
+7. Once the `uuu` command indicates "done", the flashing is complete.
+
+## Broken Auto-Boot
+
+Distro-Boot support is not currently enabled for the Bootloader.
+In order to start Linux from the u-boot commandline, the following commands are required:
+
+ext4load mmc 0:1 ${loadaddr} /boot/Image
+ext4load mmc 0:1 ${fdt_addr} /boot/imx8dxl-evk.dtb
+setenv bootargs console=ttyLP0,115200 earlycon root=/dev/mmcblk0p1
+booti ${loadaddr} - ${fdt_addr}

@@ -18,12 +18,13 @@ SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.5_1.0.1_SCFWKIT
 SCFW_RELEASE=1.12.1
 LINUX_GIT_URI=https://source.codeaurora.org/external/imx/linux-imx
 LINUX_RELEASE=lf-5.15.5-1.0.0
+DEBIAN_HTTP_URI=https://cloud.debian.org/images/cloud/bullseye/20220711-1073/debian-11-nocloud-arm64-20220711-1073.tar.xz
 
 ###
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw"
+COMPONENTS="atf uboot mkimage seco scfw linux debian"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
@@ -168,6 +169,7 @@ fi
 
 ### Compile
 set -e
+set -o pipefail
 
 # Copy SECO FW
 cd "${ROOTDIR}/build/seco"
@@ -194,6 +196,40 @@ cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 # Assemble bootable image
 cd "${ROOTDIR}/build/mkimage"
 make SOC=iMX8DXL REV=${SOC_REVISION^^} flash
+cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 
 echo "Finished compiling bootloader image."
-exit 0
+
+# Build Linux
+cd "${ROOTDIR}/build/linux"
+find "${ROOTDIR}/configs/linux" -type f | sort | xargs ./scripts/kconfig/merge_config.sh -m arch/arm64/configs/imx_v8_defconfig /dev/null
+make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" olddefconfig
+make -j$(nproc) ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" dtbs Image modules
+
+rm -rf "${ROOTDIR}/images/linux"
+mkdir -p "${ROOTDIR}/images/linux/boot"
+cp -v arch/arm64/boot/dts/freescale/imx8dxl*.dtb "${ROOTDIR}/images/linux/boot/"
+cp -v arch/arm64/boot/Image "${ROOTDIR}/images/linux/boot/"
+make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH="${ROOTDIR}/images/linux/usr" modules_install
+
+cat > "${ROOTDIR}/images/linux/boot/extlinux.conf" << EOF
+label linux
+	linux Image
+	fdtdir .
+	append root=/dev/mmcblk0p1 ro rootwait
+EOF
+
+# Integrate with rootfs
+cd "${ROOTDIR}/build/debian"
+tar -xf debian*.tar.xz
+test -f disk.raw
+# extract (root) partition at block 262144
+dd if=disk.raw of=rootfs.e2 ibs=1024 skip=131072 obs=4096
+# copy kernel into rootfs
+find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+
+# assemble final disk image
+dd of="${ROOTDIR}/images/emmc.img" if=disk.raw bs=1024 count=131072
+dd of="${ROOTDIR}/images/emmc.img" if=rootfs.e2 ibs=4096 seek=131072 obs=1024
+# U-Boot conflicts with Debian choice of offset for EFI partition :(
+#dd of="${ROOTDIR}/images/emmc.img" if="${ROOTDIR}/images/uboot.bin" bs=1024 seek=32 conv=notrunc
