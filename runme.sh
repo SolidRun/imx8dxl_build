@@ -211,6 +211,7 @@ mkdir -p "${ROOTDIR}/images/linux/boot"
 cp -v arch/arm64/boot/dts/freescale/imx8dxl*.dtb "${ROOTDIR}/images/linux/boot/"
 cp -v arch/arm64/boot/Image "${ROOTDIR}/images/linux/boot/"
 make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH="${ROOTDIR}/images/linux/usr" modules_install
+KRELEASE=`make kernelrelease`
 
 cat > "${ROOTDIR}/images/linux/boot/extlinux.conf" << EOF
 label linux
@@ -218,6 +219,19 @@ label linux
 	fdtdir .
 	append root=/dev/mmcblk0p1 ro rootwait
 EOF
+
+# Build V2X kernel drivers
+if [[ -d ${ROOTDIR}/V2XSW ]]; then
+	cd "${ROOTDIR}/V2XSW/src/saf-sdio"
+	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M="$PWD" modules
+	install -v -m644 -D saf_sdio.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/saf_sdio.ko"
+
+	cd "${ROOTDIR}/V2XSW/src/cohda/kernel/drivers/cohda/llc"
+	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD modules
+	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
+
+	depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
+fi
 
 # Integrate with rootfs
 cd "${ROOTDIR}/build/debian"
