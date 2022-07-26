@@ -130,7 +130,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 Distro-Boot support is not currently enabled for the Bootloader.
 In order to start Linux from the u-boot commandline, the following commands are required:
 
-    ext4load mmc 0:1 ${loadaddr} /boot/Image
-    ext4load mmc 0:1 ${fdt_addr} /boot/imx8dxl-v2x.dtb
+    ext4load mmc 0:1 ${kernel_addr_r} /boot/Image
+    ext4load mmc 0:1 ${fdt_addr_r} /boot/imx8dxl-v2x.dtb
     setenv bootargs console=ttyLP0,115200 earlycon root=/dev/mmcblk0p1
-    booti ${loadaddr} - ${fdt_addr}
+    booti ${kernel_addr_r} - ${fdt_addr_r}

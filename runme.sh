@@ -189,7 +189,7 @@ cp -v build/imx8dxl/release/bl31.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
 # Build u-boot
 cd "${ROOTDIR}/build/uboot"
-make CROSS_COMPILE="$CROSS_COMPILE" imx8dxl_evk_defconfig
+make CROSS_COMPILE="$CROSS_COMPILE" imx8dxl_v2x_defconfig
 make -j$(nproc) CROSS_COMPILE="$CROSS_COMPILE"
 cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
