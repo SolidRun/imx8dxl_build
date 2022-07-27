@@ -18,13 +18,12 @@ SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.5_1.0.1_SCFWKIT
 SCFW_RELEASE=1.12.1
 LINUX_GIT_URI=https://source.codeaurora.org/external/imx/linux-imx
 LINUX_RELEASE=lf-5.15.5-1.0.0
-DEBIAN_HTTP_URI=https://cloud.debian.org/images/cloud/bullseye/20220711-1073/debian-11-nocloud-arm64-20220711-1073.tar.xz
 
 ###
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw linux debian"
+COMPONENTS="atf uboot mkimage seco scfw linux"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
@@ -207,16 +206,16 @@ make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" olddefconfig
 make -j$(nproc) ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" dtbs Image modules
 
 rm -rf "${ROOTDIR}/images/linux"
-mkdir -p "${ROOTDIR}/images/linux/boot"
+mkdir -p "${ROOTDIR}/images/linux/boot/extlinux"
 cp -v arch/arm64/boot/dts/freescale/imx8dxl*.dtb "${ROOTDIR}/images/linux/boot/"
 cp -v arch/arm64/boot/Image "${ROOTDIR}/images/linux/boot/"
 make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH="${ROOTDIR}/images/linux/usr" modules_install
 KRELEASE=`make kernelrelease`
 
-cat > "${ROOTDIR}/images/linux/boot/extlinux.conf" << EOF
+cat > "${ROOTDIR}/images/linux/boot/extlinux/extlinux.conf" << EOF
 label linux
-	linux Image
-	fdtdir .
+	linux ../Image
+	fdtdir ..
 	append root=/dev/mmcblk0p1 ro rootwait
 EOF
 
@@ -233,20 +232,91 @@ if [[ -d ${ROOTDIR}/V2XSW ]]; then
 	depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
 fi
 
-# Integrate with rootfs
+# Generate a Debian rootfs
 cd "${ROOTDIR}/build/debian"
-tar -xf debian*.tar.xz
-test -f disk.raw
-# extract (root) partition at block 262144
-dd if=disk.raw of=rootfs.e2 ibs=1024 skip=131072 obs=4096
-# copy kernel into rootfs
+if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig ]]; then
+	rm -f rootfs.e2.orig
+
+	# bootstrap a first-stage rootfs
+	rm -rf stage1
+	fakeroot debootstrap --variant=minbase \
+		--arch=arm64 --components=main,contrib,non-free \
+		--foreign \
+		--include=apt-transport-https,busybox,ca-certificates,command-not-found,curl,e2fsprogs,fdisk,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,rfkill,sudo,systemd-sysv,usbutils,wget \
+		bullseye \
+		stage1 \
+		https://deb.debian.org/debian
+
+	# prepare init-script for second stage inside VM
+cat > stage1/stage2.sh << EOF
+#!/bin/sh
+
+# run second-stage bootstrap
+/debootstrap/debootstrap --second-stage
+
+# mount pseudo-filesystems
+mount -vt proc proc /proc
+mount -vt sysfs sysfs /sys
+
+# configure dns
+cat /proc/net/pnp > /etc/resolv.conf
+
+# set empty root password
+passwd -d root
+
+# update command-not-found db
+apt-file update
+update-command-not-found
+
+# populate fstab
+printf "/dev/root / ext4 defaults 0 1\\n" > /etc/fstab
+
+# delete self
+rm -f /stage2.sh
+
+# flush disk
+sync
+
+# power-off
+reboot -f
+EOF
+	chmod +x stage1/stage2.sh
+
+	# create empty partition image
+	dd if=/dev/zero of=rootfs.e2.orig bs=1 count=0 seek=1000M
+
+	# create filesystem from first stage
+	mkfs.ext2 -L rootfs -E root_owner=0:0 -d stage1 rootfs.e2.orig
+
+	# bootstrap second stage within qemu
+	qemu-system-aarch64 \
+		-m 1G \
+		-M virt \
+		-cpu cortex-a57 \
+		-smp 1 \
+		-netdev user,id=eth0 \
+		-device virtio-net-device,netdev=eth0 \
+		-drive file=rootfs.e2.orig,if=none,format=raw,id=hd0 \
+		-device virtio-blk-device,drive=hd0 \
+		-nographic \
+		-no-reboot \
+		-kernel "${ROOTDIR}/images/linux/boot/Image" \
+		-append "console=ttyAMA0 root=/dev/vda rootfstype=ext2 ip=dhcp rw init=/stage2.sh"
+
+	# convert to ext4
+	tune2fs -O extents,uninit_bg,dir_index,has_journal rootfs.e2.orig
+fi
+cp rootfs.e2.orig rootfs.e2
+
+# Add kernel to rootfs
 find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
-# Add files from overlay, if any
+# Add overlay to rootfs
 find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
 # assemble final disk image
-dd of="${ROOTDIR}/images/emmc.img" if=disk.raw bs=1024 count=131072
-dd of="${ROOTDIR}/images/emmc.img" if=rootfs.e2 ibs=4096 seek=131072 obs=1024
-# U-Boot conflicts with Debian choice of offset for EFI partition :(
-#dd of="${ROOTDIR}/images/emmc.img" if="${ROOTDIR}/images/uboot.bin" bs=1024 seek=32 conv=notrunc
+rm -f "${ROOTDIR}/images/emmc.img"
+dd if=/dev/zero of="${ROOTDIR}/images/emmc.img" bs=1 count=0 seek=1024M
+printf "o\nn\np\n1\n49152\n\na\nw\n" | fdisk "${ROOTDIR}/images/emmc.img"
+dd of="${ROOTDIR}/images/emmc.img" if="${ROOTDIR}/build/debian/rootfs.e2" ibs=1M seek=24 obs=1M
+echo "Finished generating disk image."
