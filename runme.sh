@@ -242,7 +242,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,busybox,ca-certificates,command-not-found,curl,e2fsprogs,fdisk,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,rfkill,sudo,systemd-sysv,usbutils,wget \
+		--include=apt-transport-https,busybox,ca-certificates,command-not-found,curl,e2fsprogs,fdisk,gpiod,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,rfkill,sudo,systemd-sysv,systemd-timesyncd,usbutils,wget \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian
@@ -305,7 +305,9 @@ EOF
 
 	# convert to ext4
 	tune2fs -O extents,uninit_bg,dir_index,has_journal rootfs.e2.orig
-fi
+fi;
+
+# Prepare final rootfs
 cp rootfs.e2.orig rootfs.e2
 
 # Add kernel to rootfs
