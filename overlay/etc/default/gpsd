@@ -1,0 +1,3 @@
+DEVICES="/dev/gnss0 /dev/ttyLP2"
+GPSD_OPTIONS="-s 38400"
+USBAUTO="false"

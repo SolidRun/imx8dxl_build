@@ -226,7 +226,7 @@ if [[ -d ${ROOTDIR}/V2XSW ]]; then
 	install -v -m644 -D saf_sdio.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/saf_sdio.ko"
 
 	cd "${ROOTDIR}/V2XSW/src/cohda/kernel/drivers/cohda/llc"
-	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD modules
+	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM modules
 	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
 
 	depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
@@ -242,7 +242,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,busybox,ca-certificates,command-not-found,curl,e2fsprogs,fdisk,gpiod,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,rfkill,sudo,systemd-sysv,systemd-timesyncd,usbutils,wget \
+		--include=apt-transport-https,busybox,ca-certificates,command-not-found,curl,e2fsprogs,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian

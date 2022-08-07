@@ -1,0 +1,2 @@
+# assign gnss devices to dialout group
+SUBSYSTEM=="gnss", GROUP="dialout"

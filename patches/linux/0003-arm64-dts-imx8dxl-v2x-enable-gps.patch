@@ -1,0 +1,86 @@
+From 830eab768f8312b63bc545789053295732e796df Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Sun, 7 Aug 2022 17:12:17 +0300
+Subject: [PATCH] arm64: dts: imx8dxl-v2x: enable gps
+
+MIA-M10Q gnss receiver is connected to both uart2 and i2c2.
+Describe both as sub-nodes, with the i2c node commented - as it does not
+have a driver.
+The uart child shows up as a /dev/gnss0 device.
+
+For now the enable-gpios is skipped because the currently wired gpio is
+not usable as an output, and will be changed in the future.
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ .../boot/dts/freescale/imx8dxl-sr-som.dtsi    | 32 +++++++++++++------
+ 1 file changed, 23 insertions(+), 9 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
+index e98560058f8e..2f6dfe620247 100644
+--- a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
+@@ -99,7 +99,11 @@ &i2c2 {
+ 	pinctrl-0 = <&pinctrl_i2c2>;
+ 	status = "okay";
+ 
+-	/* MIA-M10Q */
++	/* MIA-M10Q (400kHz max.)*/
++	/*gnss_ddc: mia-m10q@42 {
++		reg = <0x42>;
++		compatible = "u-blox,mia-m10";
++	};*/
+ };
+ 
+ &iomuxc {
+@@ -119,8 +123,9 @@ IMX8DXL_MCLK_OUT0_ADMA_ACM_MCLK_OUT0	0x0600004c
+ 
+ 		pinctrl_i2c2: i2c2grp {
+ 			fsl,pins = <
+-				IMX8DXL_SPI1_SCK_ADMA_I2C2_SDA		0x06000021
+-				IMX8DXL_SPI1_SDO_ADMA_I2C2_SCL		0x06000021
++				/* io with pull-up and strong drive */
++				IMX8DXL_SPI1_SCK_ADMA_I2C2_SDA		0x06000020
++				IMX8DXL_SPI1_SDO_ADMA_I2C2_SCL		0x06000020
+ 			>;
+ 		};
+ 
+@@ -157,6 +162,9 @@ IMX8DXL_SNVS_TAMPER_OUT4_LSIO_GPIO2_IO08_IN		0x0000021
+ 				/* gps interrupt: io without pull-up */
+ 				IMX8DXL_SNVS_TAMPER_IN0_LSIO_GPIO2_IO09_IN		0x0000061
+ 				/* IMX8DXL_SNVS_TAMPER_IN0_LSIO_GPIO6_IO23_IN */
++
++				/* gps timepulse: input without pull-up */
++				IMX8DXL_SNVS_TAMPER_OUT2_LSIO_GPIO2_IO06_IN		0x0000061
+ 			>;
+ 		};
+ 
+@@ -345,13 +353,19 @@ &lpuart0 {
+ /* gps */
+ &lpuart2 {
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_lpuart2>, <&pinctrl_lpuart2_gps>;
++	pinctrl-0 = <&pinctrl_lpuart2>;
+ 	status = "okay";
+-	/*
+- 	 * RESET_N: GPS_RSTN / SNVS.TAMPER_OUT4
+- 	 * EXTINT: GPS_INT / SNVS.TAMPER_IN0
+- 	*/
+-	/* TODO: gps module */
++
++	/* MIA-M10Q */
++	gnss {
++		compatible = "u-blox,mia-m10", "u-blox,neo-m8";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_lpuart2_gps>;
++		// enable-gpios = <&lsio_gpio2 8 GPIO_ACTIVE_HIGH>;
++		timepulse-gpios = <&lsio_gpio2 6 GPIO_ACTIVE_HIGH>;
++		current-speed = <38400>;
++		u-blox,extint-gpios = <&lsio_gpio2 9 GPIO_ACTIVE_HIGH>;
++	};
+ };
+ 
+ /* OTG port for boot */
+-- 
+2.37.1
+
