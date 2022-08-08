@@ -135,3 +135,210 @@ All steps in this section require using NXPs `uuu` application to interface with
        ...
 
 7. Once the `uuu` command indicates "done", the flashing is complete.
+
+## Get Started
+
+After flashing the eMMC and booting into Linux, the serial console must be used for logging into the root account for the first time.
+Simply enter "root" and press return:
+
+    Debian GNU/Linux 11 e7c450f97e59 ttyLP0
+
+    e7c450f97e59 login: root
+    Linux e7c450f97e59 5.15.5-00002-g0c527c0172f1-dirty #19 SMP PREEMPT Sun Aug 7 13:39:57 UTC 2022 aarch64
+
+    The programs included with the Debian GNU/Linux system are free software;
+    the exact distribution terms for each program are described in the
+    individual files in /usr/share/doc/*/copyright.
+
+    Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+    permitted by applicable law.
+
+    root@e7c450f97e59:~#
+
+### USB Networking
+
+The system is preconfigured as a USB Ethernet Gadget. Via the same USB connection used for booting and flashing the eMMC, your computer should be detecting a generic usb network interface once Linux has booted. This allows e.g. for internet connection sharing, or simple peer to peer networking.
+By default the system tries to acquire an IP address and DNS configuration via DHCP.
+
+### Log-In via SSH
+
+To log in via SSH, an ssh key must be installed first. Copy your favourite public key, e.g. from `~/.ssh/id_ed25519.pub`, into a new file in the root users home directory at `~/.ssh/authorized_keys`:
+
+root@e7c450f97e59:~# mkdir .ssh
+root@e7c450f97e59:~# cat > .ssh/authorized_keys << EOF
+ssh-ed25519 AAAAinsertyour pubkey@here
+EOF
+
+### Expand Root Filesystem
+
+After flashing the root filesystem is smaller than the eMMC. To utilize all space, resize both the rootfs partition - and then the filesystem:
+
+1. inspect partitions:
+
+   Using fdisk, view the current partitions. Take note of the start sector for partition 1!
+
+       root@e7c450f97e59:~# fdisk /dev/mmcblk0
+
+       Welcome to fdisk (util-linux 2.36.1).
+       Changes will remain in memory only, until you decide to write them.
+       Be careful before using the write command.
+
+
+       Command (m for help): p
+       Disk /dev/mmcblk0: 7.28 GiB, 7820083200 bytes, 15273600 sectors
+       Units: sectors of 1 * 512 = 512 bytes
+       Sector size (logical/physical): 512 bytes / 512 bytes
+       I/O size (minimum/optimal): 512 bytes / 512 bytes
+       Disklabel type: dos
+       Disk identifier: 0xcc3ec3d4
+
+       Device         Boot Start      End  Sectors  Size Id Type
+       /dev/mmcblk0p1      49152  2690687  2641535  1.3G 83 Linux
+
+       Command (m for help):
+
+2. resize partition 1:
+
+   Drop and re-create partition 1 at the same starting sector noted before, keeping the ext4 signature when prompted:
+
+       Command (m for help): d
+       Selected partition 1
+       Partition 1 has been deleted.
+
+       Command (m for help): n
+       Partition type
+          p   primary (0 primary, 0 extended, 4 free)
+          e   extended (container for logical partitions)
+       Select (default p): p
+       Partition number (1-4, default 1): 1
+       First sector (2048-15273599, default 2048): 49152
+       Last sector, +/-sectors or +/-size{K,M,G,T,P} (49152-15273599, default 15273599):
+
+       Created a new partition 1 of type 'Linux' and of size 7.3 GiB.
+       Partition #1 contains a ext4 signature.
+
+       Do you want to remove the signature? [Y]es/[N]o: N
+
+       Command (m for help): p
+
+       Disk /dev/mmcblk0: 7.28 GiB, 7820083200 bytes, 15273600 sectors
+       Units: sectors of 1 * 512 = 512 bytes
+       Sector size (logical/physical): 512 bytes / 512 bytes
+       I/O size (minimum/optimal): 512 bytes / 512 bytes
+       Disklabel type: dos
+       Disk identifier: 0xcc3ec3d4
+
+       Device         Boot Start      End  Sectors  Size Id Type
+       /dev/mmcblk0p1      49152 15273599 15224448  7.3G 83 Linux
+
+       Command (m for help): w
+       The partition table has been altered.
+       Syncing disks.
+
+3. resize root filesystem:
+
+   Linux supports online-resizing for the ext4 filesystem. Invoke `resize2fs` on partition 1 to do so:
+
+       root@e7c450f97e59:~# resize2fs /dev/mmcblk0p1
+
+## Initialise Roadlink SAF5400 Modem
+
+Note that this step requires access to the partially proprietary software-stack by NXP.
+Customers can request access to a standalone zip file with all required pieces, based on NXPs v0.13 release, along with patches for initial support of our SoM.
+
+### Compile Kernel Modules
+
+To compile the kernel drivers as part of executing `runme.sh`, the zip file must be unpacked inside `imx8dxl_build` to create the `V2XSW` folder.
+The build script will pick up sources from there and compile both `saf_sdio.ko` and `cw-llc.ko` automatically, and include them in the disk image.
+
+Install them by flashing the new disk image, or copying individually (`images/linux/usr/lib/modules/*/kernel/v2x/{saf_sdio.ko,cw-llc.ko}`).
+
+### Compile Application(s)
+
+The utilities for booting firmware on the Modem can be installed natively from the running system.
+Copy the zipfile to the system, e.g. via `scp` - then follow below commands:
+
+    apt-get install build-essential libpcap-dev libgps-dev unzip net-tools
+
+    unzip V2XSW.zip
+    cd V2XSW
+
+    # APPLY PATCHES
+
+    pushd src/cohda/app/llc
+    make BOARD=aarch64 -j2
+    make install
+    popd
+
+    pushd src/eab
+    make -j2
+    make install
+    popd
+
+    sudo install -c src/saf-sdio/include/saf_sdio.h /usr/include/linux/
+
+    pushd src/saf-bridge
+    make
+    make install
+    popd
+
+    pushd src/v2x_saf_boot/v2xHostBootApp
+    make V2X_TARGET=srimx8dxlsom
+    make V2X_TARGET=srimx8dxlsom install
+    popd
+
+    pushd src/saf-boot
+    make V2X_TARGET=evkLinux -j2
+    make V2X_TARGET=evkLinux install
+    popd
+
+    pushd src/saf-initscripts
+    sudo make install
+    popd
+
+### Boot the Modem
+
+SAF5400 requires particular initialisation steps in precise order to properly start.
+Integration with the `saf_start` init-script is desirable - currently however the following commands need to be exected manually or in a script:
+
+    #!/bin/bash
+
+    rmmod cw-llc 2>/dev/null || true
+    rmmod saf_sdio 2>/dev/null || true
+
+    if [ ! -e /sys/class/gpio/gpio41 ]; then
+      echo 41 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio41/direction
+    fi
+    if [ ! -e /sys/class/gpio/gpio42 ]; then
+      echo 42 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio42/direction
+    fi
+
+    # set boot-mode to sdio
+    echo 1 > /sys/class/gpio/gpio41/value
+
+    # reset
+    echo 1 > /sys/class/gpio/gpio42/value
+    echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/unbind
+    echo 0 > /sys/class/gpio/gpio42/value
+    sleep 1
+    echo 1 > /sys/class/gpio/gpio42/value
+    echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/bind
+    sleep 1
+    rmmod cw-llc
+
+    # load firmware
+    modprobe saf_sdio
+    sleep 1
+    v2x_saf_boot -W 1 -D SDIO -l /lib/firmware/SAF5X00_SBL.bin -L /lib/firmware/SAF5X00_SDR_SDIO.bin
+    rmmod saf_sdio
+
+    # start llc driver
+    rmmod saf_sdio
+    modprobe cw-llc TransferMode=2
+    echo "1" > /proc/sys/net/ipv6/conf/cw-llc0/disable_ipv6
+    ip link set cw-llc0 up
+
+    # show version
+    llc version
