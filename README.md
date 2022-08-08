@@ -1,7 +1,7 @@
 # SolidRun's i.MX8DXL V2X SoM build scripts
 
 ## Introduction
-Main intention of this repository is to a buildroot based build environment for i.MX8DXL based product evaluation.
+Main intention of this repository is to produce a Debian based build environment for i.MX8DXL product evaluation.
 
 The build script provides ready to use images that can be deployed on eMMC or booted via USB-OTG.
 
@@ -27,13 +27,24 @@ Therefore in order for the build directory to be owned by current user, `-u 0 -g
 ## Build with host tools
 Simply running ./runme.sh, it will check for required tools, clone and build images and place results in images/ directory.
 
+## Configure Boot Mode DIP Switch
+
+This table indicates valid boot-modes selectable via the DIP switch S1 on the Molex Carrier.
+The value 0 indicates OFF, and 1 indicates the ON state.
+
+| Switch             | 1 | 2 |
+|--------------------|---|---|
+| selected by eFuses | 0 | 0 |
+| eMMC               | 0 | 1 |
+| USB-OTG            | 1 | 0 |
+
 ## Boot via USB-OTG
 
 All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
 
 ### U-Boot only
 
-0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC for the first time*
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
 1. Connect the serial console to the computer, and open it.
 2. Connect the first USB-OTG port via a type A to type A cable to the computer.
 3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
