@@ -324,6 +324,7 @@ Integration with the `saf_start` init-script is desirable - currently however th
     echo 0 > /sys/class/gpio/gpio42/value
     sleep 1
     echo 1 > /sys/class/gpio/gpio42/value
+    echo in > /sys/class/gpio/gpio41/direction
     echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/bind
     sleep 1
     rmmod cw-llc
@@ -331,11 +332,73 @@ Integration with the `saf_start` init-script is desirable - currently however th
     # load firmware
     modprobe saf_sdio
     sleep 1
-    v2x_saf_boot -W 1 -D SDIO -l /lib/firmware/SAF5X00_SBL.bin -L /lib/firmware/SAF5X00_SDR_SDIO.bin
+    v2x_saf_boot -W 1 -D SDIO -l /lib/firmware/SAF5X00_SBL.bin
+    v2x_saf_boot -W 1 -D SDIO -L /lib/firmware/SAF5X00_SDR_SDIO.bin
     rmmod saf_sdio
 
     # start llc driver
     rmmod saf_sdio
+    modprobe cw-llc TransferMode=2
+    echo "1" > /proc/sys/net/ipv6/conf/cw-llc0/disable_ipv6
+    ip link set cw-llc0 up
+
+    # show version
+    llc version
+
+### Flash Firmware to dedicated SPI
+
+The SAF5400 is directly connected to an SPI flash which can be used as boot media to load firmware after reset, if the boot-mode gpio is level 0.
+Once flashed, the start commands from the previous section can be tuned boot from spi after reset.
+
+Firmware can be flashed *after booting SBL from sdio **but before booting SDR*** with the v2x_saf_boot application.
+Stop the initialisation sequence from the previous section *before `v2x_saf_boot ... SAF5X00_SDR_SDIO.bin`, then:
+
+    # erase flash (optional)
+    v2x_saf_boot -W 1 -D SDIO -E 10
+    # write application
+    v2x_saf_boot -W 1 -D SDIO -F /usr/lib/firmware/SAF5X00_SDR_SDIO_FLASH.bin 0x00 -I 0x00
+
+#### Boot the Modem from SPI
+
+The initialisation sequence for booting the Modem from SPI flash is similar to booting from MDIO with only minor changes:
+
+- Boot-Mode pin should be pulled low during reset
+- bind must be delayed so that saf_sdio doesn't prevent spi boot
+- skip loading firmware with v2x_saf_boot
+
+The following script implements a reset and this adapted initialisation sequence:
+
+    #!/bin/bash
+
+    rmmod cw-llc 2>/dev/null || true
+    rmmod saf_sdio 2>/dev/null || true
+
+    if [ ! -e /sys/class/gpio/gpio41 ]; then
+      echo 41 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio41/direction
+    fi
+    if [ ! -e /sys/class/gpio/gpio42 ]; then
+      echo 42 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio42/direction
+    fi
+
+    # set boot-mode to spi
+    echo 0 > /sys/class/gpio/gpio41/value
+
+    # reset
+    echo 1 > /sys/class/gpio/gpio42/value
+    echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/unbind
+    echo 0 > /sys/class/gpio/gpio42/value
+    sleep 1
+    echo 1 > /sys/class/gpio/gpio42/value
+    echo in > /sys/class/gpio/gpio41/direction
+    sleep 1
+    echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/bind
+    sleep 1
+    rmmod cw-llc
+    rmmod saf_sdio
+
+    # start llc driver
     modprobe cw-llc TransferMode=2
     echo "1" > /proc/sys/net/ipv6/conf/cw-llc0/disable_ipv6
     ip link set cw-llc0 up
