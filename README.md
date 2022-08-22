@@ -405,3 +405,14 @@ The following script implements a reset and this adapted initialisation sequence
 
     # show version
     llc version
+
+### Calibration
+
+By default on power-up the SAF5400 tries to load calibration from the connected EEPROM, and falls back to defaults otherwise.
+The current calibration can be retrieved from the modem as structured text file, and re-applied after making appropriate changes:
+
+    # read active calibration
+    llc calib -g > calib.txt
+    # edit calib.txt
+    # apply changed calibration
+    llc calib -s < calib.txt
