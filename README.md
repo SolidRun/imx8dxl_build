@@ -418,6 +418,13 @@ The current calibration can be retrieved from the modem as structured text file,
     # apply changed calibration
     llc calib -s < calib.txt
 
+Finally the active calibration can be stored to the EEPROM:
+
+    # unlock eeprom
+    llc reg w 6 0 0
+    # write calibration to eeprom
+    llc reg w 6 4000 2000
+
 ## IOs (Adapter Board)
 
 ### CAN-Bus (J8, J9)
