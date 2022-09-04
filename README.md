@@ -488,3 +488,47 @@ Their state can be toggled from GPIOs, e.g. through libgpiod, or the libgpiod ut
 
     # 3. disable both relays for 10 seconds
     gpioset -m time -s 10 8 4=0 5=0
+
+## Ethernet Switch
+
+The carrier features an SJA1110A ethernet switch supporting a wide mix of ports such as T1, 100base-tx, 1000base-tx and 2500base-tx.
+Externally exposed on the Adapter Board are 1x 100Base-TX and 1x T1, backed by a 1000Mbps RGMII link from the switch to the CPU.
+
+Linux uses the DSA Framework for management of switch ports: Any port on the switch will appear as a normal network interface and can be controlled by the standard Linux utilities such as `ethtool, ip, ifconfig, etc.`.
+Note that by design of DSA the cpu port - `eth0` should **not be used directly**. Instead - when the behaviour of a dumb switch is desired, a linux bridge interface should be created covering all ports.
+
+### 100Base-TX
+
+Switch port #1 is exposed on the V2X Adapter as "lan1":
+
+    # ifconfig -a
+    lan1: flags=4098<BROADCAST,MULTICAST>  mtu 1500
+            ether 96:d1:b9:ea:48:07  txqueuelen 1000  (Ethernet)
+            RX packets 1111  bytes 136285 (133.0 KiB)
+            RX errors 0  dropped 0  overruns 0  frame 0
+            TX packets 12  bytes 936 (936.0 B)
+            TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+Due to a bug in the switch driver, the phy will not turn on by itself.
+As a workaround - install [phytool](https://github.com/wkz/phytool.git) - then unset bit 0 at register 0x18 - to disable power-down mode:
+
+    phy=lan1/1; phytool write $phy/0x18 0x60
+
+### T1
+
+Switch port #10 is exposed on the V2X Adapter as "trx6":
+
+    # ifconfig -a
+    trx6: flags=4098<BROADCAST,MULTICAST>  mtu 1500
+            inet 192.168.20.1  netmask 255.255.255.0  broadcast 0.0.0.0
+            ether 96:d1:b9:ea:48:07  txqueuelen 1000  (Ethernet)
+            RX packets 0  bytes 0 (0.0 B)
+            RX errors 0  dropped 0  overruns 0  frame 0
+            TX packets 32  bytes 2308 (2.2 KiB)
+            TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+Note that the PHY does not support automatic negotiation for slave and master roles.
+To achieve link up between two devices, both sides must be explicitly configured:
+
+    ethtool -s trx6 master-slave forced-slave
+    ethtool -s trx6 master-slave forced-master
