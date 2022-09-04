@@ -416,3 +416,45 @@ The current calibration can be retrieved from the modem as structured text file,
     # edit calib.txt
     # apply changed calibration
     llc calib -s < calib.txt
+
+## IOs (Adapter Board)
+
+### Digital Inputs (J4)
+
+Userspace access to the two digital inputs on J4 pins 1+2 is available through the gpiod library.
+As examples and for simple usecases it provides utilities to lookup, control and monitor the varioaus GPIos on a system.
+
+Reading from the two inputs can be achieved through the following commands:
+
+    # 1. find the gpiochip instance and numbers:
+    root@f9c5d243692b:~# gpiofind DIG_IN1
+    gpiochip8 0
+    root@f9c5d243692b:~# gpiofind DIG_IN2
+    gpiochip8 1
+    # --> the inputs are on chip number 8, lines 0+1
+
+    # 2. read values from chip 8 lines 0+1
+    root@f9c5d243692b:~# gpioget 8 0 1
+    1 1
+
+A Reading of 1 means that both pins are floating, not connected to a voltage supply.
+Applying 5V or more will toggle the respective reading to 0.
+
+### Digital Outpouts (J6)
+
+Pins 0+1 on J6 provide switchable 12V from the board power supply through relays.
+
+Their state can be toggled from GPIOs, e.g. through libgpiod, or the libgpiod utilities:
+
+    # 1. find the gpiochip instance and numbers:
+    root@f9c5d243692b:~# gpiofind DIG_OUT1
+    gpiochip8 4
+    root@f9c5d243692b:~# gpiofind DIG_OUT2
+    gpiochip8 5
+    # --> the outputs are on chip number 8, lines 4+5
+
+    # 2. enable both relays for 10 seconds
+    gpioset -m time -s 10 8 4=1 5=1
+
+    # 3. disable both relays for 10 seconds
+    gpioset -m time -s 10 8 4=0 5=0
