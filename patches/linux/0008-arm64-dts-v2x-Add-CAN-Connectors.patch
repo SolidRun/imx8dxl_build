@@ -1,0 +1,96 @@
+From 84fde2666f493698769d5acdb2560d870872e7bc Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Sun, 4 Sep 2022 12:27:52 +0300
+Subject: [PATCH 8/9] arm64: dts: v2x: Add CAN Connectors
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ .../boot/dts/freescale/imx8dxl-sr-som.dtsi    |  1 -
+ arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts | 56 +++++++++++++++++++
+ 2 files changed, 56 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
+index 2271ca75d9d1..b051942d9e0b 100644
+--- a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
+@@ -329,7 +329,6 @@ &lpspi2 {
+ 	fsl,spi-num-chipselects = <1>;
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_lpspi2>;
+-	//pinctrl-assert-gpios = <&pca6416_1 7 GPIO_ACTIVE_HIGH>; // <-- what be dis?>
+ 	status = "okay";
+ 
+ 	/* SXF1800 (SoM) */
+diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts b/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
+index 2faad1e8fb59..a3634b58cb28 100644
+--- a/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
++++ b/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
+@@ -36,9 +36,65 @@ regulator_1v1: regulator-1v1 {
+ 		enable-active-high;
+ 		regulator-always-on;
+ 	};
++
++	regulator_flexcan1_standby: regulator-flexcan1-standby {
++		compatible = "regulator-fixed";
++		regulator-name = "flexcan1-standby";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&tca6408 2 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++
++	regulator_flexcan2_standby: regulator-flexcan2-standby {
++		compatible = "regulator-fixed";
++		regulator-name = "flexcan2-standby";
++		regulator-min-microvolt = <3300000>;
++		regulator-max-microvolt = <3300000>;
++		gpio = <&tca6408 3 GPIO_ACTIVE_HIGH>;
++		enable-active-high;
++	};
++};
++
++&flexcan1 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_flexcan1>;
++	xceiver-supply = <&regulator_flexcan1_standby>;
++	status = "okay";
++
++	can-transceiver {
++		/* TJA1048 */
++		max-bitrate = <5000000>;
++	};
++};
++
++&flexcan2 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_flexcan2>;
++	xceiver-supply = <&regulator_flexcan2_standby>;
++	status = "okay";
++
++	can-transceiver {
++		/* TJA1048 */
++		max-bitrate = <5000000>;
++	};
+ };
+ 
+ &iomuxc {
++		pinctrl_flexcan1: flexcan1grp {
++			fsl,pins = <
++				IMX8DXL_FLEXCAN0_TX_ADMA_FLEXCAN0_TX	0x00000021
++				IMX8DXL_FLEXCAN0_RX_ADMA_FLEXCAN0_RX	0x00000021
++			>;
++		};
++
++		pinctrl_flexcan2: flexcan2grp {
++			fsl,pins = <
++				IMX8DXL_FLEXCAN1_TX_ADMA_FLEXCAN1_TX	0x00000021
++				IMX8DXL_FLEXCAN1_RX_ADMA_FLEXCAN1_RX	0x00000021
++			>;
++		};
++
+ 		pinctrl_i2c2_gpio: i2c2gpiogrp {
+ 			fsl,pins = <
+ 				/* gpio-expander reset: io without pull-up */
+-- 
+2.37.3
+

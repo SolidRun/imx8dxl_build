@@ -419,6 +419,36 @@ The current calibration can be retrieved from the modem as structured text file,
 
 ## IOs (Adapter Board)
 
+### CAN-Bus (J8, J9)
+
+After booting the CAN network interfaces will show up in the output of the `ip` utility:
+
+    root@f9c5d243692b:~# ip addr
+    ...
+    4: can0: <NOARP,ECHO> mtu 16 qdisc noop state DOWN group default qlen 10
+        link/can
+    5: can1: <NOARP,ECHO> mtu 16 qdisc noop state DOWN group default qlen 10
+        link/can
+
+For transmitting packets it is required to configure a bitrate and set link state up.
+Then data can be exchanged e.g. with the `candump` and `cansend` commands from `can-utils` package:
+
+    apt-get install can-utils
+    ip link set can0 up type can bitrate 125000 restart-ms 100
+    ip link set dev can0 up
+    ip -details -statistics link show can0
+    ip link set can1 up type can bitrate 125000
+    ip link set dev can1 up
+    ip -details -statistics link show can1
+
+    # To receive data
+    candump can0
+
+    # To send data
+    cansend can1 "123#c0ffee"
+
+Note: the CAN interfaces are not functional on early samples manufactured before October!
+
 ### Digital Inputs (J4)
 
 Userspace access to the two digital inputs on J4 pins 1+2 is available through the gpiod library.
