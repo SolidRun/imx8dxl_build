@@ -1,7 +1,8 @@
-From 0c527c0172f172ddc9303fdad4b97824ad5756dd Mon Sep 17 00:00:00 2001
+From eb7089cea3ab58bb0a9836df3c8b6a67299e1e9b Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 31 Jul 2022 12:54:23 +0300
-Subject: [PATCH] arm64: dts: imx8dxl-v2x: change pinmux for saf5400 boot/reset
+Subject: [PATCH 2/9] arm64: dts: imx8dxl-v2x: change pinmux for saf5400
+ boot/reset
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
 ---
@@ -51,5 +52,5 @@ index 4075ef23b607..e98560058f8e 100644
  		};
  
 -- 
-2.37.1
+2.37.2
 

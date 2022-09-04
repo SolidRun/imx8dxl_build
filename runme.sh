@@ -6,18 +6,18 @@
 
 ### Versions
 ATF_GIT_URI=https://source.codeaurora.org/external/imx/imx-atf
-ATF_RELEASE=tags/lf-5.15.5-1.0.0
+ATF_RELEASE=tags/lf-5.15.32-2.0.0
 UBOOT_GIT_URI=https://source.codeaurora.org/external/imx/uboot-imx
-UBOOT_RELEASE=tags/lf-5.15.5-1.0.0
+UBOOT_RELEASE=tags/lf-5.15.32-2.0.0
 MKIMAGE_GIT_URI=https://source.codeaurora.org/external/imx/imx-mkimage
-MKIMAGE_RELEASE=tags/lf-5.15.5-1.0.0
-SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.5.bin
-SECO_RELEASE=3.8.5
-SCFW_FILE=imx-scfw-porting-kit-1.12.1.tar.gz
-SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.5_1.0.1_SCFWKIT-1.12.1&appType=license"
-SCFW_RELEASE=1.12.1
+MKIMAGE_RELEASE=tags/lf-5.15.32-2.0.0
+SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.6.bin
+SECO_RELEASE=3.8.6
+SCFW_FILE=imx-scfw-porting-kit-1.13.0.tar.gz
+SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.32_2.0.0_SCFWKIT-1.13.0&appType=license"
+SCFW_RELEASE=1.13.0
 LINUX_GIT_URI=https://source.codeaurora.org/external/imx/linux-imx
-LINUX_RELEASE=lf-5.15.5-1.0.0
+LINUX_RELEASE=lf-5.15.32-2.0.0
 
 ###
 
@@ -242,7 +242,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,busybox,ca-certificates,command-not-found,curl,e2fsprogs,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget \
+		--include=apt-transport-https,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,isc-dhcp-client,iw,initramfs-tools,locales,nano,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian
@@ -301,7 +301,10 @@ EOF
 		-nographic \
 		-no-reboot \
 		-kernel "${ROOTDIR}/images/linux/boot/Image" \
-		-append "console=ttyAMA0 root=/dev/vda rootfstype=ext2 ip=dhcp rw init=/stage2.sh"
+		-append "console=ttyAMA0 root=/dev/vda rootfstype=ext2 ip=dhcp rw init=/stage2.sh" \
+
+
+	:
 
 	# convert to ext4
 	tune2fs -O extents,uninit_bg,dir_index,has_journal rootfs.e2.orig

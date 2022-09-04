@@ -1,7 +1,7 @@
-From 32934f35a14e318eb16365da32195b960a9d0748 Mon Sep 17 00:00:00 2001
+From 2af71d8830f65dd7271b19de291c12fc0a7a26d7 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 26 Jul 2022 13:06:56 +0300
-Subject: [PATCH] HACK: fastboot emmc_dev default to 0
+Subject: [PATCH 2/3] HACK: fastboot emmc_dev default to 0
 
 For some strange reason env_get does not actually return the value of
 currently (in memory) set value of emmc_dev.
@@ -26,5 +26,5 @@ index 4f930ac19c..5022eddcfa 100644
  		else
  			return 0x8000;
 -- 
-2.37.1
+2.37.2
 

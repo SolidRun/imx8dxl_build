@@ -1,7 +1,7 @@
-From 830eab768f8312b63bc545789053295732e796df Mon Sep 17 00:00:00 2001
+From de1a3a3613b7f4cd7617369f74184ea7317eb8e1 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 7 Aug 2022 17:12:17 +0300
-Subject: [PATCH] arm64: dts: imx8dxl-v2x: enable gps
+Subject: [PATCH 3/9] arm64: dts: imx8dxl-v2x: enable gps
 
 MIA-M10Q gnss receiver is connected to both uart2 and i2c2.
 Describe both as sub-nodes, with the i2c node commented - as it does not
@@ -82,5 +82,5 @@ index e98560058f8e..2f6dfe620247 100644
  
  /* OTG port for boot */
 -- 
-2.37.1
+2.37.2
 

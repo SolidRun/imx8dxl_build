@@ -1,7 +1,7 @@
 From fcfafe8bc2ff59349961f94d3b216f2ae432254a Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 30 Aug 2022 13:32:17 +0300
-Subject: [PATCH 6/7] arm64: dts: imx8dxl-v2x: explicitly enable the gpio
+Subject: [PATCH 6/9] arm64: dts: imx8dxl-v2x: explicitly enable the gpio
  controllers
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
