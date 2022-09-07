@@ -1,0 +1,108 @@
+From abd8edcc9f93e7835bf9c94cc6b8424f3781a025 Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Wed, 7 Sep 2022 15:55:51 +0300
+Subject: [PATCH 9/9] arm64: dts: v2x: clarify pins for WiFi module
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ .../boot/dts/freescale/imx8dxl-sr-som.dtsi    |  3 +-
+ arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts | 37 ++++++-------------
+ 2 files changed, 13 insertions(+), 27 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
+index b051942d9e0b..f84959968e0b 100644
+--- a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
+@@ -117,7 +117,8 @@ IMX8DXL_COMP_CTL_GPIO_1V8_3V3_GPIORHB_PAD	0x000514a0
+ 				IMX8DXL_COMP_CTL_GPIO_1V8_3V3_GPIORHK_PAD	0x000014a0
+ 
+ 				/* 32kHz for wifi */
+-				IMX8DXL_MCLK_OUT0_ADMA_ACM_MCLK_OUT0	0x0600004c
++				/* IMX8DXL_MCLK_OUT0_ADMA_ACM_MCLK_OUT0	0x0600004c */
++				IMX8DXL_MCLK_OUT0_LSIO_GPIO0_IO20		0x0000061
+ 			>;
+ 		};
+ 
+diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts b/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
+index a3634b58cb28..94559b3d8923 100644
+--- a/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
++++ b/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
+@@ -185,16 +185,15 @@ IMX8DXL_ENET0_RGMII_TXD3_CONN_USDHC2_DATA3		0x00000021
+ 
+ 		pinctrl_wifi: wifigrp {
+ 			fsl,pins = <
+-				/* wl_reg_on: io without pull-up */
+-				/* IMX8DXL_SPI3_CS1 not a GPIO :( */
+-				IMX8DXL_SPI3_CS1_ADMA_SPI3_CS1		0x0000061
+-				/* measure if this is high */
++				/* wl_reg_on: SPI CS with pull-up, to force high */
++				/* should be: io without pull-up (WiFi module has internal pull-down) */
++				IMX8DXL_SPI3_CS1_ADMA_SPI3_CS1		0x0000021
+ 			>;
+ 		};
+ 
+ 		pinctrl_bluetooth: bluetoothgrp {
+ 			fsl,pins = <
+-				/* bt_reg_on: io without pull-up TODO: pull-up */
++				/* bt_reg_on: io without pull-up (BT module has internal pull-down) */
+ 				IMX8DXL_SPI3_SCK_LSIO_GPIO0_IO13	0x0000061
+ 			>;
+ 		};
+@@ -209,17 +208,7 @@ IMX8DXL_USB_SS3_TC2_LSIO_GPIO4_IO05	0x0000061
+ 
+ /* exposed on J14: SDA(51), SCL(53) */
+ &i2c2 {
+-	/* MFS5600AMMA7ES */
+-	mfs5600: regulator@18 {
+-		compatible = "nxp,fs5600"; /* driver missing */
+-		reg = <0x18>;
+-		/* max 400kHz bus speed with 2.2k pullup of i2c line */
+-		/* max 3.4MHz bus speed with 500 pullup of i2c line */
+-		/* feeds VIN_5V with 3A (5V0_PS???) */
+-
+-		clocks = <&clk IMX_SC_R_AUDIO_PLL_0 IMX_SC_PM_CLK_PLL>, <&mclkout0_lpcg 0>;
+-		clock-names = "pll0", "mclk";
+-	};
++	/* MFS5600AMMA7ES @ 18 */
+ 
+ 	/* TCA6408ARGTR */
+ 	tca6408: gpio@20 {
+@@ -260,7 +249,7 @@ bt: bluetooth {
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&pinctrl_bluetooth>;
+ 		compatible = "brcm,bcm4330-bt";
+-		//max-speed = <1000000>;
++		max-speed = <4000000>;
+ 		shutdown-gpios = <&lsio_gpio0 13 GPIO_ACTIVE_HIGH>;
+ 	};
+ };
+@@ -295,9 +284,9 @@ &usdhc3 {
+     #address-cells = <1>;
+     #size-cells = <0>;
+ 	pinctrl-names = "default", "state_100mhz", "state_200mhz";
+-	pinctrl-0 = <&pinctrl_usdhc3>;
+-	pinctrl-1 = <&pinctrl_usdhc3_100mhz>;
+-	pinctrl-2 = <&pinctrl_usdhc3_200mhz>;
++	pinctrl-0 = <&pinctrl_usdhc3>, <&pinctrl_wifi>;
++	pinctrl-1 = <&pinctrl_usdhc3_100mhz>, <&pinctrl_wifi>;
++	pinctrl-2 = <&pinctrl_usdhc3_200mhz>, <&pinctrl_wifi>;
+ 	bus-width = <4>;
+ 	no-sd;
+ 	non-removable;
+@@ -309,11 +298,7 @@ &usdhc3 {
+ 
+ 	/* CYW43455 */
+     wifi: cyw43455@1 {
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_wifi>;
+-        reg = <1>;
+-        compatible = "brcm,bcm4329-fmac";
+-		/* WL_REG_ON high to operate */
+-		/* BT_REG_ON high to operate */
++		reg = <1>;
++		compatible = "brcm,bcm4329-fmac";
+     };
+ };
+-- 
+2.37.3
+
