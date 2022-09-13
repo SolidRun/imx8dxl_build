@@ -1,0 +1,32 @@
+From bc0b465b2d09cb174e2ebe2215c85d676eb50dd0 Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Tue, 13 Sep 2022 13:07:07 +0300
+Subject: [PATCH] arm64: dts: v2x: move bluetooth pinctrl to parent uart
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts b/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
+index 94559b3d8923..c7ebfaeb41a7 100644
+--- a/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
++++ b/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dts
+@@ -241,13 +241,11 @@ &i2c3 {
+ /* bluetooth */
+ &lpuart1 {
+ 	pinctrl-names = "default";
+-	pinctrl-0 = <&pinctrl_lpuart1>;
++	pinctrl-0 = <&pinctrl_lpuart1>, <&pinctrl_bluetooth>;
+ 	status = "okay";
+ 	uart-has-rtscts;
+ 
+ 	bt: bluetooth {
+-		pinctrl-names = "default";
+-		pinctrl-0 = <&pinctrl_bluetooth>;
+ 		compatible = "brcm,bcm4330-bt";
+ 		max-speed = <4000000>;
+ 		shutdown-gpios = <&lsio_gpio0 13 GPIO_ACTIVE_HIGH>;
+-- 
+2.37.3
+
