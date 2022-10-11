@@ -195,6 +195,7 @@ cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 # Assemble bootable image
 cd "${ROOTDIR}/build/mkimage"
 make SOC=iMX8DXL REV=${SOC_REVISION^^} flash
+mkdir -p ${ROOTDIR}/images
 cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 
 echo "Finished compiling bootloader image."
@@ -233,6 +234,7 @@ if [[ -d ${ROOTDIR}/V2XSW ]]; then
 fi
 
 # Generate a Debian rootfs
+mkdir -p "${ROOTDIR}/build/debian"
 cd "${ROOTDIR}/build/debian"
 if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig ]]; then
 	rm -f rootfs.e2.orig
