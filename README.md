@@ -514,6 +514,15 @@ As a workaround - install [phytool](https://github.com/wkz/phytool.git) - then u
 
     phy=lan1/1; phytool write $phy/0x18 0x60
 
+#### MDIX
+
+Auto-MDIX is not supported for 100Base-TX.
+For direct device to device connections a crossover cable is recommended.
+
+Alternatively manual MDIX is supported through PHY register 0x11 bit 6:
+
+    phy=lan1/1; phytool write $phy/0x11 0x40
+
 ### T1
 
 Switch port #10 is exposed on the V2X Adapter as "trx6":
