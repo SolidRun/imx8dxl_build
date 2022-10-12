@@ -7,11 +7,11 @@
 
 ### Versions
 ATF_GIT_URI=https://source.codeaurora.org/external/imx/imx-atf
-ATF_RELEASE=tags/lf-5.15.32-2.0.0
+ATF_RELEASE=lf-5.15.32-2.0.0
 UBOOT_GIT_URI=https://source.codeaurora.org/external/imx/uboot-imx
-UBOOT_RELEASE=tags/lf-5.15.32-2.0.0
+UBOOT_RELEASE=lf-5.15.32-2.0.0
 MKIMAGE_GIT_URI=https://source.codeaurora.org/external/imx/imx-mkimage
-MKIMAGE_RELEASE=tags/lf-5.15.32-2.0.0
+MKIMAGE_RELEASE=lf-5.15.32-2.0.0
 SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.6.bin
 SECO_RELEASE=3.8.6
 SCFW_FILE=imx-scfw-porting-kit-1.13.0.tar.gz
@@ -37,18 +37,19 @@ for i in $COMPONENTS; do
 
 		if [[ -n ${!GIT_URI_VAR} ]]; then
 			echo "Fetching $i from Git ..."
-			git clone "${!GIT_URI_VAR}" "${ROOTDIR}/build/$i"
-
-			if [ $? -ne 0 ]; then
-				echo "Warning: Failed to fetch $i!"
-				dlfailed=1
-				continue
-			elif [[ -n ${!RELEASE_VAR} ]]; then
-				cd "${ROOTDIR}/build/$i"
-				git checkout "${!RELEASE_VAR}"
+			if [[ -n ${!RELEASE_VAR} ]]; then
+				git clone -b "${!RELEASE_VAR}" --depth 1 "${!GIT_URI_VAR}" "${ROOTDIR}/build/$i"
 
 				if [ $? -ne 0 ]; then
-					echo "Warning: Failed to checkout $i release ${!RELEASE_VAR}!"
+					echo "Warning: Failed to fetch $i release ${!RELEASE_VAR}!"
+					dlfailed=1
+					continue
+				fi
+			else
+				git clone "${!GIT_URI_VAR}" "${ROOTDIR}/build/$i"
+
+				if [ $? -ne 0 ]; then
+					echo "Warning: Failed to fetch $i!"
 					dlfailed=1
 					continue
 				fi
