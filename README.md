@@ -247,12 +247,15 @@ After flashing the root filesystem is smaller than the eMMC. To utilize all spac
 Note that this step requires access to the partially proprietary software-stack by NXP.
 Customers can request access to a standalone zip file with all required pieces, based on NXPs v0.13 release, along with patches for initial support of our SoM.
 
+If the right source code is present in the `V2XSW` directory, all required kernel modules and software will be compiled and added to the image.
+The modem driver will be started automatically by a `saf-llc.service` systemd unit.
+
 ### Compile Kernel Modules
 
 To compile the kernel drivers as part of executing `runme.sh`, the zip file must be unpacked inside `imx8dxl_build` to create the `V2XSW` folder.
 The build script will pick up sources from there and compile both `saf_sdio.ko` and `cw-llc.ko` automatically, and include them in the disk image.
 
-Install them by flashing the new disk image, or copying individually (`images/linux/usr/lib/modules/*/kernel/v2x/{saf_sdio.ko,cw-llc.ko}`).
+Install them by flashing the new disk image, or copying individually (`images/linux/usr/lib/modules/*/extra/{saf_sdio.ko,cw-llc.ko}`).
 
 ### Compile Application(s)
 

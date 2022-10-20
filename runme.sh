@@ -223,15 +223,47 @@ EOF
 
 # Build V2X kernel drivers
 if [[ -d ${ROOTDIR}/V2XSW ]]; then
+	echo -e "\nLLC Remote: Building saf_sdio.ko"
 	cd "${ROOTDIR}/V2XSW/src/saf-sdio"
 	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M="$PWD" modules
-	install -v -m644 -D saf_sdio.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/saf_sdio.ko"
+	install -v -m644 -D saf_sdio.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/extra/saf_sdio.ko"
+	install -v -m644 -D include/saf_sdio.h "${ROOTDIR}/images/linux/usr/include/linux/saf_sdio.h"
 
+	echo -e "\nLLC Remote: Building cw-llc.ko"
 	cd "${ROOTDIR}/V2XSW/src/cohda/kernel/drivers/cohda/llc"
 	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM modules
-	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
+	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/extra/cw-llc.ko"
 
 	depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
+
+	## Install build dependencies for LLC tool
+	dpkg --add-architecture arm64 && apt update
+	apt -y install libpcap0.8-dev:arm64 libgps-dev:arm64
+
+	## Build remaining parts of the LLC remote
+	echo -e "\nLLC Remote: Building llc tool..."
+	cd "${ROOTDIR}/V2XSW/src/cohda/app/llc"
+	make CC="${CROSS_COMPILE}gcc" ROOTFS_DIR=/ BOARD=aarch64
+	make CC="${CROSS_COMPILE}gcc" ROOTFS_DIR=/ BOARD=aarch64 INSTALLDIR=${ROOTDIR}/images/linux install
+
+	echo -e "\nLLC Remote: Building eab tool..."
+	cd "${ROOTDIR}/V2XSW/src/eab"
+	make CC="${CROSS_COMPILE}gcc"
+	make INSTALLDIR=${ROOTDIR}/images/linux install
+
+	echo -e "\nLLC Remote: Building v2xHostBootApp..."
+	cd "${ROOTDIR}/V2XSW/src/v2x_saf_boot/v2xHostBootApp"
+	make CC="${CROSS_COMPILE}gcc" EXTERNAL_CFLAGS="-I${ROOTDIR}/images/linux/usr/include/" V2X_TARGET=srimx8dxlsom
+	make INSTALLDIR=${ROOTDIR}/images/linux V2X_TARGET=srimx8dxlsom install
+
+	echo -e "\nLLC Remote: Building saf-boot..."
+	cd "${ROOTDIR}/V2XSW/src/saf-boot"
+	make CC="${CROSS_COMPILE}gcc" LIB_INCLUDES="-I${ROOTDIR}/images/linux/usr/include/" V2X_TARGET=evkLinux
+	make INSTALLDIR=${ROOTDIR}/images/linux V2X_TARGET=evkLinux install
+
+	echo -e "\nLLC Remote: Installing SAF initscripts..."
+	cd "${ROOTDIR}/V2XSW/src/saf-initscripts"
+	make INSTALLDIR=${ROOTDIR}/images/linux install
 fi
 
 # Generate a Debian rootfs
@@ -245,7 +277,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,gpsd-clients,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget,wpasupplicant \
+		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,gpsd-clients,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget,wpasupplicant,libpcap0.8,libgps28 \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian
@@ -273,6 +305,9 @@ update-command-not-found
 
 # populate fstab
 printf "/dev/root / ext4 defaults 0 1\\n" > /etc/fstab
+
+# start saf-llc on boot
+ln -s /etc/systemd/system/saf-llc.service /etc/systemd/system/multi-user.target.wants/saf-llc.service
 
 # delete self
 rm -f /stage2.sh
@@ -317,7 +352,8 @@ fi;
 cp rootfs.e2.orig rootfs.e2
 
 # Add kernel to rootfs
-find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+find "${ROOTDIR}/images/linux" -type l -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
 # Add overlay to rootfs
 find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
