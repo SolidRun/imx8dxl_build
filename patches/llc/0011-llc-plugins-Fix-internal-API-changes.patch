@@ -1,0 +1,66 @@
+From a7dff520136f74d00067683daaf01014e41d7234 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 12:20:19 +0100
+Subject: [PATCH 11/12] llc plugins: Fix internal API changes
+
+Some things were changed in the internal helper functions, but not
+everywhere.
+---
+ app/llc/plugin/udptester/test-common.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/app/llc/plugin/udptester/test-common.c b/app/llc/plugin/udptester/test-common.c
+index e2e0516..e95a22e 100644
+--- a/app/llc/plugin/udptester/test-common.c
++++ b/app/llc/plugin/udptester/test-common.c
+@@ -51,7 +51,7 @@
+ // Functions
+ //------------------------------------------------------------------------------
+ 
+-void MACAddr_fprintf (FILE *fp, uint8_t * pAddr)
++void MACAddr_fprintf (FILE *fp, const uint8_t * pAddr)
+ {
+   fprintf(fp, "%02x:%02x:%02x:%02x:%02x:%02x ", pAddr[0], pAddr[1], pAddr[2],
+           pAddr[3], pAddr[4], pAddr[5]);
+@@ -64,7 +64,7 @@ void MACAddr_fprintf (FILE *fp, uint8_t * pAddr)
+  * @return none
+  * Print headings if input data pointer is NULL
+  */
+-void EthHdr_fprintf (FILE *fp, struct ethhdr * pEthHdr)
++void EthHdr_fprintf (FILE *fp, const struct ethhdr * pEthHdr)
+ {
+   if (pEthHdr == NULL)
+   {
+@@ -102,10 +102,10 @@ void Dot11Hdr_fprintf (FILE *fp, struct IEEE80211MACHdr * pDot11Hdr)
+     fprintf(fp, "%6s ", "FrmCtl");
+     /// Duration ID, for data frames = duration of frames
+     fprintf(fp, "%6s ", "DurnID");
+-    /// SA Source address
+-    fprintf(fp, "%17s ", "Address 1");
+-    /// DA Destination address
+-    fprintf(fp, "%17s ", "Address 2");
++    /// SA Destination address
++    fprintf(fp, "%17s ", "DestinationAddress");
++    /// DA Source address
++    fprintf(fp, "%17s ", "SourceAddress");
+     /// BSSID Receiving station address (destination wireless station)
+     fprintf(fp, "%17s ", "Address 3");
+     /// Sequence control info
+@@ -118,10 +118,10 @@ void Dot11Hdr_fprintf (FILE *fp, struct IEEE80211MACHdr * pDot11Hdr)
+     fprintf(fp, "0x%04x ", ntohs(pDot11Hdr->FrameControl));
+     /// Duration ID, for data frames = duration of frames
+     fprintf(fp, "0x%04x ", ntohs(pDot11Hdr->DurationId));
+-    /// SA Source address
+-    MACAddr_fprintf(fp, pDot11Hdr->Address1);
+-    /// DA Destination address
+-    MACAddr_fprintf(fp, pDot11Hdr->Address2);
++    /// SA Destination address
++    MACAddr_fprintf(fp, pDot11Hdr->DestinationAddress);
++    /// DA Source address
++    MACAddr_fprintf(fp, pDot11Hdr->SourceAddress);
+     /// BSSID Receiving station address (destination wireless station)
+     MACAddr_fprintf(fp, pDot11Hdr->Address3);
+     /// Sequence control info
+-- 
+2.39.0
+

@@ -1,6 +1,10 @@
 /build
 /images
 /tools
-/V2XSW
 /overlay
-imx-scfw-porting-kit-*
+
+# SAF5400 source files
+llc_RFP*.tgz
+saf-sdio_RFP*.tgz
+v2x_saf_boot_RFP*.tgz
+firmware_RFP*.tgz

@@ -1,0 +1,439 @@
+From 634da1ee09312997cd39ea28c3c27c0adc8c5149 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 12:18:53 +0100
+Subject: [PATCH 10/12] llc plugins: Support newer gpsd versions
+
+---
+ app/llc/plugin/echo/Makefile       | 16 +---------------
+ app/llc/plugin/echo/llc-echo.c     | 11 ++++++++---
+ app/llc/plugin/rcap/if-gps.c       | 17 +++++++++++------
+ app/llc/plugin/rcap/rcap-tzsp.c    | 13 +++++++------
+ app/llc/plugin/rcap/testpkt-cw14.h |  2 +-
+ app/llc/plugin/udpfwd/Makefile     | 17 +----------------
+ app/llc/plugin/udpfwd/llc-udpfwd.c | 11 ++++++++---
+ app/llc/plugin/udptester/Makefile  | 16 +---------------
+ app/llc/plugin/utc/Makefile        | 19 +------------------
+ app/llc/plugin/utc/llc-utc.c       | 11 ++++++++---
+ 10 files changed, 47 insertions(+), 86 deletions(-)
+
+diff --git a/app/llc/plugin/echo/Makefile b/app/llc/plugin/echo/Makefile
+index e56282c..5a89d4e 100644
+--- a/app/llc/plugin/echo/Makefile
++++ b/app/llc/plugin/echo/Makefile
+@@ -10,11 +10,6 @@ else
+   EXTRA_CFLAGS += -O2
+ endif
+ 
+-# gpsd
+-GPSD_SRC_DIR ?= $(CURDIR)/../../../../../bsp/app/gpsd
+-GPSD_APP_DIR ?= $(CURDIR)/gpsd
+-GPSD_APP_BIN ?= $(GPSD_APP_DIR)/libgps.so
+-
+ # If using yocto/poky toolchain, use CC in environment
+ ifneq ($(TARGET_PREFIX),arm-poky-linux-gnueabi-)
+ CC := "$(CROSS_COMPILE)gcc"
+@@ -59,11 +54,10 @@ EXTRA_CFLAGS += -I. \
+                 -I../.. \
+                 -I../../lib \
+                 -I../../../pktbuf \
+-                -I$(GPSD_APP_DIR) \
+                 -I$(COHDA_INCLUDE_DIR) \
+                 -D__LLC__ -DBOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+ 
+-LDFLAGS += -L$(GPSD_APP_DIR) -lgps -lstdc++ \
++LDFLAGS += -lgps -lstdc++ \
+            -L$(CURDIR)/../../lib -lLLC -lpcap
+ 
+ LIBS +=
+@@ -79,20 +73,12 @@ $(APP): $(LIBS) $(OBJS)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
+ 	@cp $@ ../
+ 
+-$(OBJS): $(GPSD_APP_BIN)
+-
+ %.o: %.c
+ 	-@mkdir --parents $(shell dirname $(DEPDIR)/$*.d)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
+ 	@echo $@: Makefile >> $*.d
+ 	@mv -f $*.d $(DEPDIR)/$*.d
+ 
+-$(GPSD_APP_BIN):
+-	make -C $(GPSD_SRC_DIR) BOARD=$(BOARD)
+-	rm -f $(GPSD_APP_DIR)
+-	ln -s $(GPSD_SRC_DIR)/$(BOARD) $(GPSD_APP_DIR)
+-	test -f $@
+-
+ clean:
+ 	rm -f $(APP) $(OBJS) *.o *.so *.so.map
+ 	rm -f $(GPSD_APP_DIR)
+diff --git a/app/llc/plugin/echo/llc-echo.c b/app/llc/plugin/echo/llc-echo.c
+index 519997f..2a73ae3 100644
+--- a/app/llc/plugin/echo/llc-echo.c
++++ b/app/llc/plugin/echo/llc-echo.c
+@@ -307,13 +307,18 @@ static int LLC_GPSRecv (struct LLCEcho *pDev)
+ 
+   // We're not so concerned about fix quality, but
+   // rather just the time
+-  if ((pDev->pGPS->status < 0) ||
++#if GPSD_API_MAJOR_VERSION >= 10
++  int gpsStatus = pDev->pGPS->fix.status;
++#else
++  int gpsStatus = pDev->pGPS->status;
++#endif
++  if ((gpsStatus < 0) ||
+       (pDev->pGPS->fix.mode < 2))
+   {
+     // Unacceptable fix
+     if (pDev->pGPS->set & MODE_SET)
+       d_printf(D_INFO, NULL, "No GPS signal: mode %d status %d\n",
+-               pDev->pGPS->fix.mode, pDev->pGPS->status);
++               pDev->pGPS->fix.mode, gpsStatus);
+     // else, some other version or device info, don't care
+     Res = -EINVAL;
+     goto Error;
+@@ -334,7 +339,7 @@ static int LLC_GPSRecv (struct LLCEcho *pDev)
+   }
+ 
+   // convert the time into microseconds
+-  MicroSec = (uint64_t)(pDev->pGPS->fix.time * LLC_ECHO_MICROSEC_PER_SEC);
++  MicroSec = (uint64_t)(pDev->pGPS->fix.time.tv_sec * LLC_ECHO_MICROSEC_PER_SEC);
+ 
+   (void) gettimeofday(&Time, NULL);
+   Now = (Time.tv_sec * LLC_ECHO_MICROSEC_PER_SEC) + Time.tv_usec;
+diff --git a/app/llc/plugin/rcap/if-gps.c b/app/llc/plugin/rcap/if-gps.c
+index f800981..d707565 100644
+--- a/app/llc/plugin/rcap/if-gps.c
++++ b/app/llc/plugin/rcap/if-gps.c
+@@ -119,7 +119,7 @@ int GPSInit(struct ifGPSData * pGPS,
+   #elif (defined(BOARD_RE2L) || defined(BOARD_RE2Q))
+   pGPS->GpsCache = (tGPSInfo) {NAN, {NAN,0,0,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN},0,-1,0,NAN};
+   #else
+-  pGPS->GpsCache = (tGPSInfo) {NAN, {NAN,0,0,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN},0,-1,0,NAN};
++  pGPS->GpsCache = (tGPSInfo) {NAN, {{0,0},0,0,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN,NAN},0,-1,0,NAN};
+   #endif
+ 
+   // attempt to attach to the gpsd and create pGpsData object
+@@ -225,7 +225,7 @@ int GPSUpdate(struct ifGPSData * pGPS,
+ 
+   d_printf(D_DEBUG, NULL, "gps: mode %d, time %f, lat %f, lon %f, alt %f, head %f, speed %f\n",
+            Fix->mode,
+-           Fix->time,
++           (Fix->time.tv_sec + Fix->time.tv_nsec / (double)1E9),
+            Fix->latitude,
+            Fix->longitude,
+            Fix->altitude,
+@@ -233,11 +233,16 @@ int GPSUpdate(struct ifGPSData * pGPS,
+            Fix->speed);
+ 
+   // Set a mimnimum level for fix quality
+-  if ((Fix->mode        <= MODE_NO_FIX) ||
+-      (pGPS->pGpsData->status == STATUS_NO_FIX))
++#if GPSD_API_MAJOR_VERSION >= 10
++  int gpsStatus = pGPS->pGpsData->fix.status;
++#else
++  int gpsStatus = pGPS->pGpsData->status;
++#endif
++  if ((Fix->mode <= MODE_NO_FIX) ||
++      (gpsStatus == STATUS_NO_FIX))
+   {
+     d_printf(D_DEBUG, NULL, "No GPS fix (%d,%d)\n",
+-             Fix->mode, pGPS->pGpsData->status);
++             Fix->mode, gpsStatus);
+     // No fix at all, ensure all data updated with 'no position'
+     LocalSet = GPS_REQUIRED_SET_BITS;
+   }
+@@ -248,7 +253,7 @@ int GPSUpdate(struct ifGPSData * pGPS,
+   // Update cache with available fields
+ 
+   if (LocalSet & ONLINE_SET)
+-    pGPS->GpsCache.Online        = pGPS->pGpsData->online;
++    pGPS->GpsCache.Online        = (pGPS->pGpsData->online.tv_sec + pGPS->pGpsData->online.tv_nsec / (double)1E9);
+   if (LocalSet & TIME_SET)
+   {
+     pGPS->GpsCache.Fix.time      = Fix->time;
+diff --git a/app/llc/plugin/rcap/rcap-tzsp.c b/app/llc/plugin/rcap/rcap-tzsp.c
+index 6b4dce6..f8d5b9d 100644
+--- a/app/llc/plugin/rcap/rcap-tzsp.c
++++ b/app/llc/plugin/rcap/rcap-tzsp.c
+@@ -1460,13 +1460,13 @@ void GeneratePosFromFix(struct gps_fix_t *pFix,
+   uint16_t TmpSpeed = 0;
+ //  uint16_t TmpAcceleration = 0; // @todo Acceleration
+ 
+-  if (!isnan(pFix->time))
++  if (pFix->time.tv_sec != 0)
+   {
+     // SecMark
+     struct timeval Time;
+     // Convert GPS time to constituent parts
+-    Time.tv_sec = pFix->time;
+-    Time.tv_usec = (1e6*(pFix->time - (uint32_t)pFix->time))+1;
++    Time.tv_sec = pFix->time.tv_sec;
++    Time.tv_usec = pFix->time.tv_nsec / 1000;
+     // Calculate milliseconds since minute start
+     TmpSecMark = ((Time.tv_sec % 60) * 1000) + (Time.tv_usec / 1000);
+ 
+@@ -1860,9 +1860,10 @@ int RCap_Forwarding (struct RCap *pRCap)
+           {
+             bool NewFix = false;
+             // Only update if the fix time has changed
+-            if (pRCap->GPS.Fix.time != PosLastUpdateTime)
++            double fixTimeSec = pRCap->GPS.Fix.time.tv_sec + (pRCap->GPS.Fix.time.tv_nsec / (double)1E9);
++            if (fixTimeSec != PosLastUpdateTime)
+             {
+-              PosLastUpdateTime = pRCap->GPS.Fix.time;
++              PosLastUpdateTime = fixTimeSec;
+               NewFix = true;
+               // final check - ignore if we have no fix
+               if (pRCap->GPS.Fix.mode <= MODE_NO_FIX)
+@@ -1875,7 +1876,7 @@ int RCap_Forwarding (struct RCap *pRCap)
+                 pRCap->Opts.RxPosFixedLat,
+                 pRCap->Opts.RxPosFixedLong,
+                 pRCap->Opts.RxPosFixedElev,
+-                pRCap->GPS.Fix.time, // use the current synchronised gps time
++                fixTimeSec, // use the current synchronised gps time
+                 &(pRCap->CurPos));
+             else
+               GeneratePosFromFix(&pRCap->GPS.Fix,
+diff --git a/app/llc/plugin/rcap/testpkt-cw14.h b/app/llc/plugin/rcap/testpkt-cw14.h
+index d9fe25b..ed693eb 100644
+--- a/app/llc/plugin/rcap/testpkt-cw14.h
++++ b/app/llc/plugin/rcap/testpkt-cw14.h
+@@ -443,7 +443,7 @@ static inline int TestPkt_CW14_GPS_LogToFile(const struct GPSInfo * pGPSInfo,
+   double LocalTime_s = LocalTime.tv_sec + LocalTime.tv_nsec*1e-9;
+   ret = fprintf(pFile, "%16.6f,%16.6f,%11.6f,%11.6f,%7.2f,%6.2f\n",
+                 LocalTime_s,
+-                pFix->time,
++                (pFix->time.tv_sec + pFix->time.tv_sec / (double)1E6),
+                 pFix->latitude,
+                 pFix->longitude,
+                 pFix->track,
+diff --git a/app/llc/plugin/udpfwd/Makefile b/app/llc/plugin/udpfwd/Makefile
+index f4b91d6..c695597 100644
+--- a/app/llc/plugin/udpfwd/Makefile
++++ b/app/llc/plugin/udpfwd/Makefile
+@@ -10,11 +10,6 @@ else
+   EXTRA_CFLAGS += -O2
+ endif
+ 
+-# gpsd
+-GPSD_SRC_DIR ?= $(CURDIR)/../../../../../bsp/app/gpsd
+-GPSD_APP_DIR ?= $(CURDIR)/gpsd
+-GPSD_APP_BIN ?= $(GPSD_APP_DIR)/libgps.so
+-
+ # If using yocto/poky toolchain, use CC in environment
+ ifneq ($(TARGET_PREFIX),arm-poky-linux-gnueabi-)
+ CC := "$(CROSS_COMPILE)gcc"
+@@ -59,11 +54,10 @@ EXTRA_CFLAGS += -I. \
+                 -I../.. \
+                 -I../../lib \
+                 -I../../../pktbuf \
+-                -I$(GPSD_APP_DIR) \
+                 -I$(COHDA_INCLUDE_DIR) \
+                 -D__LLC__ -DBOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+ 
+-LDFLAGS += -L$(GPSD_APP_DIR) -lgps  -lstdc++ \
++LDFLAGS += -lgps  -lstdc++ \
+            -L$(CURDIR)/../../lib -lLLC -lpcap
+ 
+ LIBS +=
+@@ -79,23 +73,14 @@ $(APP): $(LIBS) $(OBJS)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
+ 	@cp $@ ../
+ 
+-$(OBJS): $(GPSD_APP_BIN)
+-
+ %.o: %.c
+ 	-@mkdir --parents $(shell dirname $(DEPDIR)/$*.d)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
+ 	@echo $@: Makefile >> $*.d
+ 	@mv -f $*.d $(DEPDIR)/$*.d
+ 
+-$(GPSD_APP_BIN):
+-	make -C $(GPSD_SRC_DIR) BOARD=$(BOARD)
+-	rm -f $(GPSD_APP_DIR)
+-	ln -s $(GPSD_SRC_DIR)/$(BOARD) $(GPSD_APP_DIR)
+-	test -f $@
+-
+ clean:
+ 	rm -f $(APP) $(OBJS) *.o *.so *.so.map
+-	rm -f $(GPSD_APP_DIR)
+ 	rm -rf $(DEPDIR)/*
+ 	rm -rf $(DEPDIR)
+ 
+diff --git a/app/llc/plugin/udpfwd/llc-udpfwd.c b/app/llc/plugin/udpfwd/llc-udpfwd.c
+index 0f661a2..afa065f 100644
+--- a/app/llc/plugin/udpfwd/llc-udpfwd.c
++++ b/app/llc/plugin/udpfwd/llc-udpfwd.c
+@@ -442,13 +442,18 @@ static int LLC_GPSRecv (struct LLCUDPFWD *pDev)
+ 
+   // We're not so concerned about fix quality, but
+   // rather just the time
+-  if ((pDev->pGPS->status < 0) ||
++#if GPSD_API_MAJOR_VERSION >= 10
++  int gpsStatus = pDev->pGPS->fix.status;
++#else
++  int gpsStatus = pDev->pGPS->status;
++#endif
++  if ((gpsStatus < 0) ||
+       (pDev->pGPS->fix.mode < 2))
+   {
+     // Unacceptable fix
+     if (pDev->pGPS->set & MODE_SET)
+       d_printf(D_INFO, NULL, "No GPS signal: mode %d status %d\n",
+-               pDev->pGPS->fix.mode, pDev->pGPS->status);
++               pDev->pGPS->fix.mode, gpsStatus);
+     // else, some other version or device info, don't care
+     Res = -EINVAL;
+     goto Error;
+@@ -469,7 +474,7 @@ static int LLC_GPSRecv (struct LLCUDPFWD *pDev)
+   }
+ 
+   // convert the time into microseconds
+-  MicroSec = (uint64_t)(pDev->pGPS->fix.time * LLC_UDPFWD_MICROSEC_PER_SEC);
++  MicroSec = (uint64_t)(pDev->pGPS->fix.time.tv_sec * 1E3 + pDev->pGPS->fix.time.tv_nsec / 1E6);
+ 
+   (void) gettimeofday(&Time, NULL);
+   Now = (Time.tv_sec * LLC_UDPFWD_MICROSEC_PER_SEC) + Time.tv_usec;
+diff --git a/app/llc/plugin/udptester/Makefile b/app/llc/plugin/udptester/Makefile
+index ffb5fe0..02c3239 100644
+--- a/app/llc/plugin/udptester/Makefile
++++ b/app/llc/plugin/udptester/Makefile
+@@ -10,11 +10,6 @@ else
+   EXTRA_CFLAGS += -O2
+ endif
+ 
+-# gpsd
+-GPSD_SRC_DIR ?= $(CURDIR)/../../../../../bsp/app/gpsd
+-GPSD_APP_DIR ?= $(CURDIR)/gpsd
+-GPSD_APP_BIN ?= $(GPSD_APP_DIR)/libgps.so
+-
+ # If using yocto/poky toolchain, use CC in environment
+ ifneq ($(TARGET_PREFIX),arm-poky-linux-gnueabi-)
+ CC := "$(CROSS_COMPILE)gcc"
+@@ -59,11 +54,10 @@ EXTRA_CFLAGS += -I. \
+                 -I../.. \
+                 -I../../lib \
+                 -I../../../pktbuf \
+-                -I$(GPSD_APP_DIR) \
+                 -I$(COHDA_INCLUDE_DIR) \
+                 -D__LLC__ -DBOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+ 
+-LDFLAGS += -L$(GPSD_APP_DIR) -lgps \
++LDFLAGS += -lgps \
+            -L$(CURDIR)/../../lib -lLLC -lpcap
+ 
+ LIBS +=
+@@ -79,7 +73,6 @@ $(APP): $(LIBS) $(OBJS)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
+ 	@cp $@ ../
+ 
+-$(OBJS): $(GPSD_APP_BIN)
+ 
+ %.o: %.c
+ 	-@mkdir --parents $(shell dirname $(DEPDIR)/$*.d)
+@@ -87,15 +80,8 @@ $(OBJS): $(GPSD_APP_BIN)
+ 	@echo $@: Makefile >> $*.d
+ 	@mv -f $*.d $(DEPDIR)/$*.d
+ 
+-$(GPSD_APP_BIN):
+-	make -C $(GPSD_SRC_DIR) BOARD=$(BOARD)
+-	rm -f $(GPSD_APP_DIR)
+-	ln -s $(GPSD_SRC_DIR)/$(BOARD) $(GPSD_APP_DIR)
+-	test -f $@
+-
+ clean:
+ 	rm -f $(APP) $(OBJS) *.o *.so *.so.map
+-	rm -f $(GPSD_APP_DIR)
+ 	rm -rf $(DEPDIR)/*
+ 	rm -rf $(DEPDIR)
+ 
+diff --git a/app/llc/plugin/utc/Makefile b/app/llc/plugin/utc/Makefile
+index 1c3dd05..6c2b844 100644
+--- a/app/llc/plugin/utc/Makefile
++++ b/app/llc/plugin/utc/Makefile
+@@ -10,11 +10,6 @@ else
+   EXTRA_CFLAGS += -O2
+ endif
+ 
+-# gpsd
+-GPSD_SRC_DIR ?= $(CURDIR)/../../../../../bsp/app/gpsd
+-GPSD_APP_DIR ?= $(CURDIR)/gpsd
+-GPSD_APP_BIN ?= $(GPSD_APP_DIR)/libgps.so
+-
+ ifeq ($(BOARD),mk2)
+ endif
+ ifeq ($(BOARD),mk4)
+@@ -39,10 +34,9 @@ CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -nostart
+ EXTRA_CFLAGS += -I. \
+                 -I../.. \
+                 -I../../../../kernel/include \
+-                -I$(GPSD_APP_DIR) \
+                 -D__LLC__ -DBOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+ 
+-LDFLAGS += -L$(GPSD_APP_DIR) -lgps -lstdc++ -lm \
++LDFLAGS += -lgps -lstdc++ -lm \
+            -L$(CURDIR)/../../lib -lLLC -lpcap
+ 
+ LIBS +=
+@@ -58,25 +52,14 @@ $(APP): $(LIBS) $(OBJS)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
+ 	@cp $@ ../
+ 
+-$(OBJS): $(GPSD_APP_BIN)
+-
+ %.o: %.c
+ 	-@mkdir --parents $(shell dirname $(DEPDIR)/$*.d)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) -c $< -o $@
+ 	@echo $@: Makefile >> $*.d
+ 	@mv -f $*.d $(DEPDIR)/$*.d
+ 
+-$(GPSD_APP_BIN):
+-ifneq ($(TARGET_PREFIX),arm-poky-linux-gnueabi-)
+-	make -C $(GPSD_SRC_DIR) BOARD=$(BOARD)
+-endif
+-	rm -f $(GPSD_APP_DIR)
+-	ln -s $(GPSD_SRC_DIR)/$(BOARD) $(GPSD_APP_DIR)
+-	test -f $@
+-
+ clean:
+ 	rm -f $(APP) $(OBJS) *.o *.so *.so.map
+-	rm -f $(GPSD_APP_DIR)
+ 	rm -rf $(DEPDIR)/*
+ 	rm -rf $(DEPDIR)
+ 
+diff --git a/app/llc/plugin/utc/llc-utc.c b/app/llc/plugin/utc/llc-utc.c
+index 0aecafd..b668265 100644
+--- a/app/llc/plugin/utc/llc-utc.c
++++ b/app/llc/plugin/utc/llc-utc.c
+@@ -396,12 +396,17 @@ static int LLC_UTCRecv (struct LLCUTC *pDev)
+   }
+ 
+   // We're not so concerned about fix quality, but rather just the time
+-  if ((pDev->pGPS->status < 0) || (pDev->pGPS->fix.mode < 2))
++#if GPSD_API_MAJOR_VERSION >= 10
++  int gpsStatus = pDev->pGPS->fix.status;
++#else
++  int gpsStatus = pDev->pGPS->status;
++#endif
++  if ((gpsStatus < 0) || (pDev->pGPS->fix.mode < 2))
+   {
+     // Unacceptable fix
+     if (pDev->pGPS->set & MODE_SET)
+       d_printf(D_INFO, NULL, "No GPS signal: mode %d status %d\n",
+-               pDev->pGPS->fix.mode, pDev->pGPS->status);
++               pDev->pGPS->fix.mode, gpsStatus);
+     // else, some other version or device info, don't care
+     Res = -EINVAL;
+     goto Error;
+@@ -421,7 +426,7 @@ static int LLC_UTCRecv (struct LLCUTC *pDev)
+   }
+ 
+   // convert the time into microseconds
+-  MicroSec = (uint64_t)(pDev->pGPS->fix.time * LLC_UTC_MICROSEC_PER_SEC);
++  MicroSec = (uint64_t)(pDev->pGPS->fix.time.tv_sec * 1E3 + pDev->pGPS->fix.time.tv_nsec / 1E6);
+ 
+   // Debug output of delta between UTC and current time
+   if (d_test(D_DBG))
+-- 
+2.39.0
+

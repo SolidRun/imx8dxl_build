@@ -1,4 +1,4 @@
-From 2a700d6b10667f579a4368701abb4e4e1d24aa93 Mon Sep 17 00:00:00 2001
+From f741a40ceddb7841760054aea202df42eb9a0bb3 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 4 Dec 2022 13:03:59 +0200
 Subject: [PATCH 04/12] cw-llc: fix ethtool drvinfo build error with 5.15
@@ -28,5 +28,5 @@ index bbae3ea..6a5c8c2 100644
  // Macros & Constants
  //-----------------------------------------------------------------------------
 -- 
-2.30.2
+2.39.0
 

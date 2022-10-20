@@ -1,0 +1,57 @@
+From 92d6789c81933d2fdbe2102e767bf8497094b457 Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Thu, 20 Oct 2022 14:13:01 +0200
+Subject: [PATCH 07/12] llc-app: fix rcap.so build for debian
+
+Debian has the static library in a subdirectory of /usr/lib named by the
+arch and standard library used to build it. Otherwise the rcap.so plugin
+won't be build as dynamically linked library.
+---
+ app/llc/plugin/mcap/Makefile | 6 +++++-
+ app/llc/plugin/rcap/Makefile | 9 ++++++++-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/app/llc/plugin/mcap/Makefile b/app/llc/plugin/mcap/Makefile
+index 0de2ca5..18701dd 100644
+--- a/app/llc/plugin/mcap/Makefile
++++ b/app/llc/plugin/mcap/Makefile
+@@ -61,9 +61,13 @@ ifneq ($(strip $(BOARD)),)
+     ROOTFS_DIR        ?= ../../../../../bsp/image/rootfs
+     LIBPCAP_DIR        = $(ROOTFS_DIR)/usr
+     LIBPCAP_INC        = $(LIBPCAP_DIR)/include
+-    LIBPCAP_BIN        = $(LIBPCAP_DIR)/lib/libpcap.a
++    LIBPCAP_BIN        = $(LIBPCAP_DIR)/lib/$(BOARD)-linux-gnu/libpcap.a
+     LDFLAGS           += -L$(LIBPCAP_DIR)/lib -lpcap
+     CFLAGS             = -nostartfiles
++
++  else
++    # overarching makefile will define BOARD ?= $(NATIVE), so we need this here, too
++    KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+   endif
+ 
+ else
+diff --git a/app/llc/plugin/rcap/Makefile b/app/llc/plugin/rcap/Makefile
+index e4df03c..ae6f572 100644
+--- a/app/llc/plugin/rcap/Makefile
++++ b/app/llc/plugin/rcap/Makefile
+@@ -55,9 +55,16 @@ ifneq ($(strip $(BOARD)),)
+     ROOTFS_DIR ?= ../../../../../bsp/image/rootfs
+     LIBPCAP_DIR = $(ROOTFS_DIR)/usr
+     LIBPCAP_INC = $(LIBPCAP_DIR)/include
+-    LIBPCAP_BIN = $(LIBPCAP_DIR)/lib/libpcap.a
++    LIBPCAP_BIN = $(LIBPCAP_DIR)/lib/$(BOARD)-linux-gnu/libpcap.a
+     LDFLAGS    += -L$(LIBPCAP_DIR)/lib -lpcap
+     CFLAGS      = -nostartfiles
++
++  else
++    # overarching makefile will define BOARD ?= $(NATIVE), so we need this here, too
++    KERNELDIR  ?= /lib/modules/$(shell uname -r)/build
++    LIBPCAP_DIR = $(ROOTFS_DIR)/usr
++    LIBPCAP_INC = $(LIBPCAP_DIR)/include
++    LDFLAGS    += -lpcap
+   endif
+ 
+ else
+-- 
+2.39.0
+

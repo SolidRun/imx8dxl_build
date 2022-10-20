@@ -1,0 +1,56 @@
+From 24fac4f856ddc49d7b90215e7a580d21b4f15e7a Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 12:10:10 +0100
+Subject: [PATCH 09/12] llc plugins: Fix possible buffer overflowss
+
+---
+ app/llc/plugin/bridge/Opts.h | 6 ++++--
+ app/llc/plugin/udpfwd/Opts.h | 2 +-
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/app/llc/plugin/bridge/Opts.h b/app/llc/plugin/bridge/Opts.h
+index c48e2d8..6bce9fb 100644
+--- a/app/llc/plugin/bridge/Opts.h
++++ b/app/llc/plugin/bridge/Opts.h
+@@ -10,13 +10,15 @@
+ //------------------------------------------------------------------------------
+ #include <stdint.h>
+ #include <stdbool.h>
++#include <net/if.h>
+ 
+ //------------------------------------------------------------------------------
+ // Macros & Constants
+ //------------------------------------------------------------------------------
+ 
+ /// Maximum length of option lists
+-#define OPTS_MAXIFNAMELEN          (64)
++#define OPTS_MAXIFNAMELEN          (IF_NAMESIZE)
++#define OPTS_MAXMACLEN             (18)
+ 
+ //------------------------------------------------------------------------------
+ // Type definitions
+@@ -46,7 +48,7 @@ typedef struct Opts_tag
+   char pInterfaceName[OPTS_MAXIFNAMELEN];
+ 
+   /// MAC Address
+-  char pMACAddress[OPTS_MAXIFNAMELEN];
++  char pMACAddress[OPTS_MAXMACLEN];
+ 
+   /// Channel Number to listen on. Assumes Tx successive SeqNums
+   uint8_t ChannelNumber;
+diff --git a/app/llc/plugin/udpfwd/Opts.h b/app/llc/plugin/udpfwd/Opts.h
+index b02ad6d..bd09da5 100644
+--- a/app/llc/plugin/udpfwd/Opts.h
++++ b/app/llc/plugin/udpfwd/Opts.h
+@@ -87,7 +87,7 @@ typedef struct Opts_tag
+   uint16_t Port;
+ 
+   /// Report File name Special String
+-  char pSpecialString[OPTS_MAXFILENAMELENGTH];
++  char pSpecialString[20];
+ 
+ } tOpts;
+ 
+-- 
+2.39.0
+

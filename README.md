@@ -305,7 +305,9 @@ After flashing the root filesystem is smaller than the eMMC. To utilize all spac
 ## Initialise Roadlink SAF5400 Modem
 
 Note that this step requires access to the partially proprietary software-stack by NXP.
-Customers can request access to a standalone zip file with all required pieces, based on NXPs v0.13 release, along with patches for initial support of our SoM.
+Customers can request access to a standalone zip file with all required pieces, based on NXPs v0.15 release.
+
+The modem driver will be started automatically by a `saf-llc.service` systemd unit.
 
 ### Compile Kernel Modules
 

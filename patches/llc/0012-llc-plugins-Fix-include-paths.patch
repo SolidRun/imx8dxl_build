@@ -1,0 +1,184 @@
+From 0f063da1f9ea36f8269524b7b3eaa4b902e08570 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 12:53:30 +0100
+Subject: [PATCH 12/12] llc plugins: Fix include paths
+
+---
+ app/llc/plugin/calib/Conf_Dump.c  | 2 +-
+ app/llc/plugin/calib/Conf_Dump.h  | 2 +-
+ app/llc/plugin/calib/Conf_Parse.c | 2 +-
+ app/llc/plugin/calib/Conf_Parse.h | 2 +-
+ app/llc/plugin/cfg/Conf_Dump.c    | 2 +-
+ app/llc/plugin/cfg/Conf_Dump.h    | 2 +-
+ app/llc/plugin/cfg/Conf_Parse.c   | 2 +-
+ app/llc/plugin/cfg/Conf_Parse.h   | 2 +-
+ app/llc/plugin/mcap/Makefile      | 4 ++--
+ app/llc/plugin/stats/Conf_Dump.c  | 2 +-
+ app/llc/plugin/stats/Conf_Dump.h  | 2 +-
+ app/llc/plugin/stats/Conf_Parse.c | 2 +-
+ app/llc/plugin/stats/Conf_Parse.h | 2 +-
+ 13 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/app/llc/plugin/calib/Conf_Dump.c b/app/llc/plugin/calib/Conf_Dump.c
+index 4744114..c5befa2 100644
+--- a/app/llc/plugin/calib/Conf_Dump.c
++++ b/app/llc/plugin/calib/Conf_Dump.c
+@@ -1,6 +1,6 @@
+ 
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/app/llc/plugin/calib/Conf_Dump.h b/app/llc/plugin/calib/Conf_Dump.h
+index 004f906..8cab99b 100644
+--- a/app/llc/plugin/calib/Conf_Dump.h
++++ b/app/llc/plugin/calib/Conf_Dump.h
+@@ -1,5 +1,5 @@
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #define FAILURE 1
+ #define SUCCESS 0
+ void tMKxCalibrationData_Dump(char *pStr, tMKxCalibrationData *pInput);
+diff --git a/app/llc/plugin/calib/Conf_Parse.c b/app/llc/plugin/calib/Conf_Parse.c
+index e3ba2b6..bdefc25 100644
+--- a/app/llc/plugin/calib/Conf_Parse.c
++++ b/app/llc/plugin/calib/Conf_Parse.c
+@@ -1,6 +1,6 @@
+ 
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/app/llc/plugin/calib/Conf_Parse.h b/app/llc/plugin/calib/Conf_Parse.h
+index 9e49f3e..9c687c2 100644
+--- a/app/llc/plugin/calib/Conf_Parse.h
++++ b/app/llc/plugin/calib/Conf_Parse.h
+@@ -1,5 +1,5 @@
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #define FAILURE 1
+ #define SUCCESS 0
+ uint32_t tMKxCalibrationData_Parse(const char *pKey, const char *pValue, tMKxCalibrationData *pParse);
+diff --git a/app/llc/plugin/cfg/Conf_Dump.c b/app/llc/plugin/cfg/Conf_Dump.c
+index 017bfc9..22dc190 100644
+--- a/app/llc/plugin/cfg/Conf_Dump.c
++++ b/app/llc/plugin/cfg/Conf_Dump.c
+@@ -1,6 +1,6 @@
+ 
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/app/llc/plugin/cfg/Conf_Dump.h b/app/llc/plugin/cfg/Conf_Dump.h
+index 05dde1c..f9c90fd 100644
+--- a/app/llc/plugin/cfg/Conf_Dump.h
++++ b/app/llc/plugin/cfg/Conf_Dump.h
+@@ -1,5 +1,5 @@
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #define FAILURE 1
+ #define SUCCESS 0
+ void tMKxChanConfig_Dump(char *pStr, tMKxChanConfig *pInput);
+diff --git a/app/llc/plugin/cfg/Conf_Parse.c b/app/llc/plugin/cfg/Conf_Parse.c
+index e7dc142..b3c71f1 100644
+--- a/app/llc/plugin/cfg/Conf_Parse.c
++++ b/app/llc/plugin/cfg/Conf_Parse.c
+@@ -1,6 +1,6 @@
+ 
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/app/llc/plugin/cfg/Conf_Parse.h b/app/llc/plugin/cfg/Conf_Parse.h
+index 3b1a241..2b2a91f 100644
+--- a/app/llc/plugin/cfg/Conf_Parse.h
++++ b/app/llc/plugin/cfg/Conf_Parse.h
+@@ -1,5 +1,5 @@
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #define FAILURE 1
+ #define SUCCESS 0
+ uint32_t tMKxChanConfig_Parse(const char *pKey, const char *pValue, tMKxChanConfig *pParse);
+diff --git a/app/llc/plugin/mcap/Makefile b/app/llc/plugin/mcap/Makefile
+index 18701dd..03f9487 100644
+--- a/app/llc/plugin/mcap/Makefile
++++ b/app/llc/plugin/mcap/Makefile
+@@ -6,7 +6,7 @@ PWD	= $(shell pwd)
+ 
+ # are we building as plugin for llc or for cw-tool
+ ifneq (,$(findstring llc,$(PWD)))
+-  COMMON_DIR         = $(PWD)/../../../../..
++  COMMON_DIR         = $(PWD)/../../../..
+   PLUGIN_INCLUDE_DIR = ../../
+   PLUGIN_DEST        = ../
+ 
+@@ -17,7 +17,7 @@ else
+   PLUGIN_DEST        = ../cw-tool/src/plugin
+ endif
+ 
+-COHDA_DIR         = $(COMMON_DIR)/cohda
++COHDA_DIR         = $(COMMON_DIR)
+ COHDA_INCLUDE_DIR = $(COHDA_DIR)/kernel/include
+ 
+ # Comment/uncomment the following line to disable/enable debugging
+diff --git a/app/llc/plugin/stats/Conf_Dump.c b/app/llc/plugin/stats/Conf_Dump.c
+index 93ab9f6..ab65df8 100644
+--- a/app/llc/plugin/stats/Conf_Dump.c
++++ b/app/llc/plugin/stats/Conf_Dump.c
+@@ -1,6 +1,6 @@
+ 
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/app/llc/plugin/stats/Conf_Dump.h b/app/llc/plugin/stats/Conf_Dump.h
+index bd03888..2afefed 100644
+--- a/app/llc/plugin/stats/Conf_Dump.h
++++ b/app/llc/plugin/stats/Conf_Dump.h
+@@ -1,5 +1,5 @@
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #define FAILURE 1
+ #define SUCCESS 0
+ void tMKxRadioStatsData_Dump(char *pStr, tMKxRadioStatsData *pInput);
+diff --git a/app/llc/plugin/stats/Conf_Parse.c b/app/llc/plugin/stats/Conf_Parse.c
+index 757e93a..ce55000 100644
+--- a/app/llc/plugin/stats/Conf_Parse.c
++++ b/app/llc/plugin/stats/Conf_Parse.c
+@@ -1,6 +1,6 @@
+ 
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #include <inttypes.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+diff --git a/app/llc/plugin/stats/Conf_Parse.h b/app/llc/plugin/stats/Conf_Parse.h
+index 7746810..eca92f2 100644
+--- a/app/llc/plugin/stats/Conf_Parse.h
++++ b/app/llc/plugin/stats/Conf_Parse.h
+@@ -1,5 +1,5 @@
+ #define _GNU_SOURCE
+-#include "llc-api.h"
++#include "cohda/llc/llc-api.h"
+ #define FAILURE 1
+ #define SUCCESS 0
+ uint32_t tMKxRadioStatsData_Parse(const char *pKey, const char *pValue, tMKxRadioStatsData *pParse);
+-- 
+2.39.0
+

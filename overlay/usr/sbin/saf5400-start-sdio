@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# check if cw_llc is loaded
+lsmod | grep cw_llc > /dev/null 2>&1
+if [ "$?" != "0" ] ; then
+    rmmod saf_sdio 2>/dev/null || true
+
+    if [ ! -e /sys/class/gpio/gpio41 ]; then
+      echo 41 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio41/direction
+    fi
+    if [ ! -e /sys/class/gpio/gpio42 ]; then
+      echo 42 > /sys/class/gpio/export
+      echo out > /sys/class/gpio/gpio42/direction
+    fi
+
+    # set boot-mode to sdio
+    echo 1 > /sys/class/gpio/gpio41/value
+
+    # reset
+    echo 1 > /sys/class/gpio/gpio42/value
+    echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/unbind
+    echo 0 > /sys/class/gpio/gpio42/value
+    sleep 1
+    echo 1 > /sys/class/gpio/gpio42/value
+    echo in > /sys/class/gpio/gpio41/direction
+    echo 5b020000.mmc > /sys/bus/platform/drivers/sdhci-esdhc-imx/bind
+    sleep 1
+    rmmod cw-llc
+
+    # load firmware
+    modprobe saf_sdio
+    sleep 1
+    v2x_saf_boot -W 1 -D SDIO -l /lib/firmware/SAF5X00_SBL.bin
+    v2x_saf_boot -W 1 -D SDIO -L /lib/firmware/SAF5X00_SDR_SDIO.bin
+    rmmod saf_sdio
+
+    # start llc driver
+    rmmod saf_sdio
+    modprobe cw-llc TransferMode=2
+    echo "1" > /proc/sys/net/ipv6/conf/cw-llc0/disable_ipv6
+    ip link set cw-llc0 up
+
+    # initial channel config
+    llc chconfig -s -w CCH -c 176 -a 3 -p 0 -f $(cat /sys/class/net/cw-llc0/address)
+
+    # show version
+    llc version
+
+    echo "saf5400-start: SAF booted successfully!"
+else
+    echo "saf5400-start: SAF is already loaded"
+fi
+
+return 0 2> /dev/null || exit 0

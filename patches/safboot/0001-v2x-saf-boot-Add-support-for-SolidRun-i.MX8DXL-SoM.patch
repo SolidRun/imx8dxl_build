@@ -1,0 +1,105 @@
+From 7861a1b5434a0d2805b72f436c81ed6b0dcd2934 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 13:47:24 +0100
+Subject: [PATCH 1/2] v2x-saf-boot: Add support for SolidRun i.MX8DXL SoM
+
+---
+ v2xHostPal/v2xEvoBootGlobalCnf.mk             | 12 ++++++++++
+ v2xHostPal/v2xHostDal/inc/v2xHostDalBoot.h    | 22 +++++++++++++++++++
+ .../v2xHostDal/inc/v2xHostDalCommonTypes.h    |  1 +
+ v2xHostPal/v2xHostDal/inc/v2xHostDalSdio.h    |  4 ++++
+ 4 files changed, 39 insertions(+)
+
+diff --git a/v2xHostPal/v2xEvoBootGlobalCnf.mk b/v2xHostPal/v2xEvoBootGlobalCnf.mk
+index 8603bcd..407595e 100755
+--- a/v2xHostPal/v2xEvoBootGlobalCnf.mk
++++ b/v2xHostPal/v2xEvoBootGlobalCnf.mk
+@@ -25,6 +25,7 @@ REMOTE=3
+ IMX8=4
+ COMPANION=5
+ SYSVAL_BOOTSTATUS_BASED=6
++SRIMX8DXLSOM=9
+ #list of OS supported
+ LINUX=1
+ QNX=2
+@@ -111,6 +112,17 @@ PAL_SDIO_ENABLE=0
+ PAL_GPIO_ENABLE=0
+ endif
+ 
++ifeq ($(findstring srimx8dxlsom,$(V2X_TARGET)), srimx8dxlsom)
++PLATFORM_OS = linux
++CC ?= gcc -fno-exceptions
++GLOBAL_CFLAGS += -DV2X_BOARD=$(SRIMX8DXLSOM) -DV2X_OS=$(LINUX) -O2
++PAL_SDIO_ENABLE=1
++PAL_SPI_ENABLE=0
++PAL_UART_ENABLE=0
++PAL_ETHERNET_ENABLE=0
++PAL_GPIO_ENABLE=1
++endif
++
+ #to ENABLE-1 DISABLE-0 the respective interfaces in v2xHostBootIntf_init
+ PAL_SDIO_ENABLE?=1
+ PAL_SPI_ENABLE?=1
+diff --git a/v2xHostPal/v2xHostDal/inc/v2xHostDalBoot.h b/v2xHostPal/v2xHostDal/inc/v2xHostDalBoot.h
+index ead6216..c5747cd 100755
+--- a/v2xHostPal/v2xHostDal/inc/v2xHostDalBoot.h
++++ b/v2xHostPal/v2xHostDal/inc/v2xHostDalBoot.h
+@@ -177,6 +177,28 @@ retain, install, activate or otherwise use the software.
+ #define V2XHOSTBOOT_SAF2_SDIO_FLOW_CNTRL            0u
+ #define V2XHOSTBOOT_SAF2_SPI_UART_FLOW_CNTRL        0u
+ #define V2XHOSTBOOT_SAF2_ETH_FLOW_CNTRL             0u
++
++
++/* SolidRun i.MX8DXL SoM */
++#elif (V2X_BOARD == SRIMX8DXLSOM)
++#define V2XHOSTBOOT_MAX_SAF_SUPPORTED               1u
++#define V2XHOSTBOOT_GPIO_SAF1_BS1                   41u
++#define V2XHOSTBOOT_GPIO_SAF1_BS2                   32u
++#define V2XHOSTBOOT_GPIO_SAF1_BS3                   33u
++#define V2XHOSTBOOT_GPIO_SAF1_RST                   42u
++#define V2XHOSTBOOT_GPIO_SAF1_SUPPORTED             TRUE
++#define V2XHOSTBOOT_SAF1_SDIO_FLOW_CNTRL            (FLWCTRL_PBL_BOOTSTATUS | FLWCTRL_SBL_INT)
++#define V2XHOSTBOOT_SAF1_SPI_UART_FLOW_CNTRL        (FLWCTRL_PBL_BOOTSTATUS | FLWCTRL_SBL_BOOTSTATUS)
++#define V2XHOSTBOOT_SAF1_ETH_FLOW_CNTRL             (FLWCTRL_PBL_BOOTSTATUS | FLWCTRL_SBL_INT)
++
++#define V2XHOSTBOOT_GPIO_SAF2_BS1                   0u
++#define V2XHOSTBOOT_GPIO_SAF2_BS2                   0u
++#define V2XHOSTBOOT_GPIO_SAF2_BS3                   0u
++#define V2XHOSTBOOT_GPIO_SAF2_RST                   0u
++#define V2XHOSTBOOT_GPIO_SAF2_SUPPORTED             FALSE
++#define V2XHOSTBOOT_SAF2_SDIO_FLOW_CNTRL            (FLWCTRL_PBL_BOOTSTATUS | FLWCTRL_SBL_INT)
++#define V2XHOSTBOOT_SAF2_SPI_UART_FLOW_CNTRL        (FLWCTRL_PBL_BOOTSTATUS | FLWCTRL_SBL_BOOTSTATUS)
++#define V2XHOSTBOOT_SAF2_ETH_FLOW_CNTRL             (FLWCTRL_PBL_BOOTSTATUS | FLWCTRL_SBL_INT)
+ #endif
+ 
+ 
+diff --git a/v2xHostPal/v2xHostDal/inc/v2xHostDalCommonTypes.h b/v2xHostPal/v2xHostDal/inc/v2xHostDalCommonTypes.h
+index 818541e..0158ea3 100755
+--- a/v2xHostPal/v2xHostDal/inc/v2xHostDalCommonTypes.h
++++ b/v2xHostPal/v2xHostDal/inc/v2xHostDalCommonTypes.h
+@@ -52,6 +52,7 @@ retain, install, activate or otherwise use the software.
+ #define IMX8                                        4u
+ #define COMPANION                                   5u
+ #define SYSVAL_BOOTSTATUS_BASED                     6u
++#define SRIMX8DXLSOM                                9u
+ 
+ #if (V2X_OS==LINUX)
+ #ifndef LITTLE
+diff --git a/v2xHostPal/v2xHostDal/inc/v2xHostDalSdio.h b/v2xHostPal/v2xHostDal/inc/v2xHostDalSdio.h
+index 979f2f2..ec71a5a 100755
+--- a/v2xHostPal/v2xHostDal/inc/v2xHostDalSdio.h
++++ b/v2xHostPal/v2xHostDal/inc/v2xHostDalSdio.h
+@@ -50,6 +50,10 @@ retain, install, activate or otherwise use the software.
+ #define V2XHOSTDALSDIO_DTS_TARGET1            "/dev/saf_sdio1"
+ #define V2XHOSTDALSDIO_DTS_TARGET2            "/dev/saf_sdio2"
+ #define V2XHOSTDALSDIO_DEFAULT_CLK_MHZ        50000000
++#elif (V2X_BOARD == SRIMX8DXLSOM)
++#define V2XHOSTDALSDIO_DTS_TARGET1            "/dev/saf_sdio1"
++#define V2XHOSTDALSDIO_DTS_TARGET2            "/dev/null"
++#define V2XHOSTDALSDIO_DEFAULT_CLK_MHZ        40000000
+ #define V2XHOSTDALSDIO_MAX_SUPPORTED_CLK_MHZ  50
+ #endif
+ #define V2XHOSTDALSDIO_DTSCHECK_TIMEOUT       1000  //1sec
+-- 
+2.39.0
+

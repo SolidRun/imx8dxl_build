@@ -1,0 +1,543 @@
+From 03e4c3b19069ab637a049edd433ff46fc273ca74 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 12:44:09 +0100
+Subject: [PATCH 08/12] llc plugins: silence address-of-packed-member warning
+
+---
+ app/llc/plugin/autocal/Makefile     | 2 +-
+ app/llc/plugin/auxadc/Makefile      | 2 +-
+ app/llc/plugin/bridge/Makefile      | 2 +-
+ app/llc/plugin/calcw/Makefile       | 2 +-
+ app/llc/plugin/capture/Makefile     | 2 +-
+ app/llc/plugin/cbrmon/Makefile      | 2 +-
+ app/llc/plugin/cfg/Makefile         | 2 +-
+ app/llc/plugin/compensator/Makefile | 2 +-
+ app/llc/plugin/config/Makefile      | 2 +-
+ app/llc/plugin/count/Makefile       | 2 +-
+ app/llc/plugin/dbg/Makefile         | 2 +-
+ app/llc/plugin/dmesg/Makefile       | 2 +-
+ app/llc/plugin/dump/Makefile        | 2 +-
+ app/llc/plugin/error/Makefile       | 2 +-
+ app/llc/plugin/fault/Makefile       | 2 +-
+ app/llc/plugin/flush/Makefile       | 2 +-
+ app/llc/plugin/gpio/Makefile        | 2 +-
+ app/llc/plugin/log/Makefile         | 2 +-
+ app/llc/plugin/loop/Makefile        | 2 +-
+ app/llc/plugin/mem/Makefile         | 2 +-
+ app/llc/plugin/ping/Makefile        | 2 +-
+ app/llc/plugin/raw/Makefile         | 2 +-
+ app/llc/plugin/reg/Makefile         | 2 +-
+ app/llc/plugin/reset/Makefile       | 2 +-
+ app/llc/plugin/rx/Makefile          | 2 +-
+ app/llc/plugin/rxphylast/Makefile   | 2 +-
+ app/llc/plugin/safetymon/Makefile   | 2 +-
+ app/llc/plugin/sec/Makefile         | 2 +-
+ app/llc/plugin/simtdapi/Makefile    | 2 +-
+ app/llc/plugin/stats/Makefile       | 2 +-
+ app/llc/plugin/status/Makefile      | 2 +-
+ app/llc/plugin/temp/Makefile        | 2 +-
+ app/llc/plugin/tsf/Makefile         | 2 +-
+ app/llc/plugin/tx/Makefile          | 2 +-
+ app/llc/plugin/txphylast/Makefile   | 2 +-
+ app/llc/plugin/txqueue/Makefile     | 2 +-
+ app/llc/plugin/utc/Makefile         | 2 +-
+ app/llc/plugin/version/Makefile     | 2 +-
+ 38 files changed, 38 insertions(+), 38 deletions(-)
+
+diff --git a/app/llc/plugin/autocal/Makefile b/app/llc/plugin/autocal/Makefile
+index 73dea80..43cee5d 100644
+--- a/app/llc/plugin/autocal/Makefile
++++ b/app/llc/plugin/autocal/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/auxadc/Makefile b/app/llc/plugin/auxadc/Makefile
+index ca474e3..3f12cf7 100644
+--- a/app/llc/plugin/auxadc/Makefile
++++ b/app/llc/plugin/auxadc/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/bridge/Makefile b/app/llc/plugin/bridge/Makefile
+index 2c34602..e64b108 100644
+--- a/app/llc/plugin/bridge/Makefile
++++ b/app/llc/plugin/bridge/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/calcw/Makefile b/app/llc/plugin/calcw/Makefile
+index e76fb4e..5075d14 100644
+--- a/app/llc/plugin/calcw/Makefile
++++ b/app/llc/plugin/calcw/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/capture/Makefile b/app/llc/plugin/capture/Makefile
+index 071c59a..cd2eabd 100644
+--- a/app/llc/plugin/capture/Makefile
++++ b/app/llc/plugin/capture/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/cbrmon/Makefile b/app/llc/plugin/cbrmon/Makefile
+index 20868e2..1d6ee8b 100644
+--- a/app/llc/plugin/cbrmon/Makefile
++++ b/app/llc/plugin/cbrmon/Makefile
+@@ -49,7 +49,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/cfg/Makefile b/app/llc/plugin/cfg/Makefile
+index 0490063..f12e371 100644
+--- a/app/llc/plugin/cfg/Makefile
++++ b/app/llc/plugin/cfg/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/compensator/Makefile b/app/llc/plugin/compensator/Makefile
+index 50300e8..364b6b8 100644
+--- a/app/llc/plugin/compensator/Makefile
++++ b/app/llc/plugin/compensator/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/config/Makefile b/app/llc/plugin/config/Makefile
+index 6a68f53..e553007 100644
+--- a/app/llc/plugin/config/Makefile
++++ b/app/llc/plugin/config/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?= ~
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/count/Makefile b/app/llc/plugin/count/Makefile
+index e7daa3e..c8fc20f 100644
+--- a/app/llc/plugin/count/Makefile
++++ b/app/llc/plugin/count/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/dbg/Makefile b/app/llc/plugin/dbg/Makefile
+index a0c1323..5384e3e 100644
+--- a/app/llc/plugin/dbg/Makefile
++++ b/app/llc/plugin/dbg/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/dmesg/Makefile b/app/llc/plugin/dmesg/Makefile
+index 8eee792..80fabec 100644
+--- a/app/llc/plugin/dmesg/Makefile
++++ b/app/llc/plugin/dmesg/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/dump/Makefile b/app/llc/plugin/dump/Makefile
+index ee28a18..d44d86d 100644
+--- a/app/llc/plugin/dump/Makefile
++++ b/app/llc/plugin/dump/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/error/Makefile b/app/llc/plugin/error/Makefile
+index 05c750c..d05b056 100644
+--- a/app/llc/plugin/error/Makefile
++++ b/app/llc/plugin/error/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/fault/Makefile b/app/llc/plugin/fault/Makefile
+index e918d0e..a553686 100644
+--- a/app/llc/plugin/fault/Makefile
++++ b/app/llc/plugin/fault/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/flush/Makefile b/app/llc/plugin/flush/Makefile
+index 443e2ec..75804a5 100644
+--- a/app/llc/plugin/flush/Makefile
++++ b/app/llc/plugin/flush/Makefile
+@@ -46,7 +46,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/gpio/Makefile b/app/llc/plugin/gpio/Makefile
+index df2a118..8f506d9 100644
+--- a/app/llc/plugin/gpio/Makefile
++++ b/app/llc/plugin/gpio/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/log/Makefile b/app/llc/plugin/log/Makefile
+index 4ca98c3..00bc2a9 100644
+--- a/app/llc/plugin/log/Makefile
++++ b/app/llc/plugin/log/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections -pthread
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/loop/Makefile b/app/llc/plugin/loop/Makefile
+index a1f35e5..db322c6 100644
+--- a/app/llc/plugin/loop/Makefile
++++ b/app/llc/plugin/loop/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections -pthread
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/mem/Makefile b/app/llc/plugin/mem/Makefile
+index af920e5..8efbcda 100644
+--- a/app/llc/plugin/mem/Makefile
++++ b/app/llc/plugin/mem/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/ping/Makefile b/app/llc/plugin/ping/Makefile
+index a27733e..ef9baac 100644
+--- a/app/llc/plugin/ping/Makefile
++++ b/app/llc/plugin/ping/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/raw/Makefile b/app/llc/plugin/raw/Makefile
+index 57c9720..5ddae3c 100644
+--- a/app/llc/plugin/raw/Makefile
++++ b/app/llc/plugin/raw/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/reg/Makefile b/app/llc/plugin/reg/Makefile
+index b038143..4350fca 100644
+--- a/app/llc/plugin/reg/Makefile
++++ b/app/llc/plugin/reg/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/reset/Makefile b/app/llc/plugin/reset/Makefile
+index e9d51f1..6bd564c 100644
+--- a/app/llc/plugin/reset/Makefile
++++ b/app/llc/plugin/reset/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/rx/Makefile b/app/llc/plugin/rx/Makefile
+index 78d69cc..ba27ca0 100644
+--- a/app/llc/plugin/rx/Makefile
++++ b/app/llc/plugin/rx/Makefile
+@@ -49,7 +49,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/rxphylast/Makefile b/app/llc/plugin/rxphylast/Makefile
+index ff2a805..280a08f 100644
+--- a/app/llc/plugin/rxphylast/Makefile
++++ b/app/llc/plugin/rxphylast/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?= ~
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/safetymon/Makefile b/app/llc/plugin/safetymon/Makefile
+index e5e80b1..f1a313c 100644
+--- a/app/llc/plugin/safetymon/Makefile
++++ b/app/llc/plugin/safetymon/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/sec/Makefile b/app/llc/plugin/sec/Makefile
+index fcbb52f..2a83609 100644
+--- a/app/llc/plugin/sec/Makefile
++++ b/app/llc/plugin/sec/Makefile
+@@ -49,7 +49,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/simtdapi/Makefile b/app/llc/plugin/simtdapi/Makefile
+index b7f8390..a88dcc1 100644
+--- a/app/llc/plugin/simtdapi/Makefile
++++ b/app/llc/plugin/simtdapi/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?= ~
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/stats/Makefile b/app/llc/plugin/stats/Makefile
+index 6d0cc0f..226fa37 100644
+--- a/app/llc/plugin/stats/Makefile
++++ b/app/llc/plugin/stats/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/status/Makefile b/app/llc/plugin/status/Makefile
+index f7e4857..92d688a 100644
+--- a/app/llc/plugin/status/Makefile
++++ b/app/llc/plugin/status/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/temp/Makefile b/app/llc/plugin/temp/Makefile
+index 6adce17..f12e300 100644
+--- a/app/llc/plugin/temp/Makefile
++++ b/app/llc/plugin/temp/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/tsf/Makefile b/app/llc/plugin/tsf/Makefile
+index 1a17a18..9518e8c 100644
+--- a/app/llc/plugin/tsf/Makefile
++++ b/app/llc/plugin/tsf/Makefile
+@@ -46,7 +46,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/tx/Makefile b/app/llc/plugin/tx/Makefile
+index 0584c13..daa5600 100644
+--- a/app/llc/plugin/tx/Makefile
++++ b/app/llc/plugin/tx/Makefile
+@@ -49,7 +49,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/txphylast/Makefile b/app/llc/plugin/txphylast/Makefile
+index 77738f9..62d610b 100644
+--- a/app/llc/plugin/txphylast/Makefile
++++ b/app/llc/plugin/txphylast/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?= ~
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/txqueue/Makefile b/app/llc/plugin/txqueue/Makefile
+index 519e68c..7dd57dc 100644
+--- a/app/llc/plugin/txqueue/Makefile
++++ b/app/llc/plugin/txqueue/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/utc/Makefile b/app/llc/plugin/utc/Makefile
+index 1cd948d..1c3dd05 100644
+--- a/app/llc/plugin/utc/Makefile
++++ b/app/llc/plugin/utc/Makefile
+@@ -33,7 +33,7 @@ ifneq ($(TARGET_PREFIX),arm-poky-linux-gnueabi-)
+   CC := $(subst $\",,$(CC))
+ endif
+ 
+-CFLAGS += -Wall -Werror -MD -shared -nostartfiles -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -nostartfiles -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+diff --git a/app/llc/plugin/version/Makefile b/app/llc/plugin/version/Makefile
+index 37d82de..48a6cb5 100644
+--- a/app/llc/plugin/version/Makefile
++++ b/app/llc/plugin/version/Makefile
+@@ -48,7 +48,7 @@ COHDA_INCLUDE_DIR ?= ../../../../kernel/include
+ BOARD ?= $(shell uname --m)
+ INSTALLDIR ?=
+ 
+-CFLAGS += -Wall -Werror -MD -shared -fPIC \
++CFLAGS += -Wall -Werror -Wno-error=address-of-packed-member -MD -shared -fPIC \
+          -fdata-sections -ffunction-sections
+ 
+ EXTRA_CFLAGS += -I. \
+-- 
+2.39.0
+

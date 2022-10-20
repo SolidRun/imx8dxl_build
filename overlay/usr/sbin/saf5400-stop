@@ -1,0 +1,34 @@
+#!/bin/bash
+
+SAF_DEV_CNT="1"
+
+# check if cw_llc is loaded
+lsmod | grep cw_llc > /dev/null 2>&1
+if [ "$?" = "0" ] ; then
+
+    # get configured transfer mode
+    TRANSFER_MODE=$(cat /sys/module/cw_llc/parameters/TransferMode)
+
+    # send reset to SAFs
+    for i in $(seq 0 $((${SAF_DEV_CNT}-1))); do
+        echo "saf5400-stop: sending reset to SAF $(( i + 1 ))"
+        llc -i ${i} reset > /dev/null 2>&1
+    done
+
+    # set SAF interfaces down
+    for i in $(seq 0 $((${SAF_DEV_CNT}-1))); do
+        echo "saf5400-stop: setting cw-llc${i} down"
+        ip link set cw-llc${i} down > /dev/null 2>&1
+    done
+    sleep 1
+
+    # remove LLC kernel module
+    echo "saf5400-stop: removing LLC kernel module"
+    rmmod cw-llc > /dev/null 2>&1
+
+    echo "saf5400-stop: SAF can be now reloaded"
+else
+    echo "saf5400-stop: SAF is not loaded"
+fi
+
+return 0 2> /dev/null || exit 0

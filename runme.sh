@@ -23,12 +23,18 @@ SAFSDIO_FILE=saf-sdio_RFP1.0.4.tgz
 SAFSDIO_FILE_URI="Roadlink BSP v0.15"
 LLC_FILE=llc_RFP2.5.tgz
 LLC_FILE_URI="Roadlink BSP v0.15"
+SAFFIRMWARE_FILE=firmware_RFP2.5.tgz
+SAFFIRMWARE_FILE_URI="Roadlink BSP v0.15"
+SAFBOOT_FILE=v2x_saf_boot_RFP3.5.0.tgz
+SAFBOOT_FILE_URI="Roadlink BSP v0.15"
+SXF1800_FILE=SXF1800_REL_RFP8.1.2.zip
+SXF1800_FILE_URI="SXF1800 RFP 8.1.2"
 
 ###
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw linux safsdio llc"
+COMPONENTS="atf uboot mkimage seco scfw linux safsdio llc saffirmware safboot"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
@@ -85,6 +91,12 @@ for i in $COMPONENTS; do
 					if [[ $i == safsdio ]]; then
 						mv "${ROOTDIR}/build/saf-sdio" "${ROOTDIR}/build/safsdio"
 					fi
+					if [[ $i == saffirmware ]]; then
+						mv "${ROOTDIR}/build/firmware" "${ROOTDIR}/build/saffirmware"
+					fi
+					if [[ $i == safboot ]]; then
+						mv "${ROOTDIR}/build/v2x_saf_boot" "${ROOTDIR}/build/safboot"
+					fi
 				else
 					mkdir "${ROOTDIR}/build/$i"
 					cp -v "${ROOTDIR}/${!FILE_VAR}" "${ROOTDIR}/build/$i/"
@@ -118,18 +130,20 @@ for i in $COMPONENTS; do
 		fi
 
 		# unpack NXP PKGs
-		for NXPPKG in `ls *.bin 2>/dev/null`; do
-			chmod +x $NXPPKG
-			./$NXPPKG --auto-accept
+		if [[ $i == seco || $i == scfw ]]; then
+			for NXPPKG in `ls *.bin 2>/dev/null`; do
+				chmod +x $NXPPKG
+				./$NXPPKG --auto-accept
 
-			if [ $? -ne 0 ]; then
-				echo "Warning: Failed to extract $NXPPKG!"
-				dlfailed=1
-				cd "${ROOTDIR}"
-				rm -rf "${ROOTDIR}/build/$i"
-				continue
-			fi
-		done
+				if [ $? -ne 0 ]; then
+					echo "Warning: Failed to extract $NXPPKG!"
+					dlfailed=1
+					cd "${ROOTDIR}"
+					rm -rf "${ROOTDIR}/build/$i"
+					continue
+				fi
+			done
+		fi
 
 		# scfw porting kit is multi-wrapped :(
 		if [[ $i == scfw ]]; then
@@ -265,6 +279,80 @@ if [[ -d ${ROOTDIR}/build/llc ]]; then
 	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
 fi
 
+# Build SAF5x00 LLC Library and CLI Tool
+if [[ -d ${ROOTDIR}/build/llc ]]; then
+	cd "${ROOTDIR}/build/llc/app/llc"
+
+	dpkg --add-architecture arm64 && apt update
+	apt -y install libpcap0.8-dev:arm64 libgps-dev:arm64
+
+	make CC="${CROSS_COMPILE}gcc" ROOTFS_DIR=/ BOARD=aarch64
+	install -v -m755 -D llc                           ${ROOTDIR}/images/linux/usr/sbin/llc
+	install -v -d ${ROOTDIR}/images/linux/usr/sbin/plugin/
+	install -v -m644 -D plugin/*.so                   ${ROOTDIR}/images/linux/usr/sbin/plugin/
+
+	cd "${ROOTDIR}/build/llc/app/llc/lib"
+	install -v -m644 -D libLLC.so                     ${ROOTDIR}/images/linux/usr/lib/libLLC.so
+
+	cd "${ROOTDIR}/build/llc/kernel/include"
+	install -v -m644 -D cohda/llc/llc.h               ${ROOTDIR}/images/linux/usr/include/cohda/llc/llc.h
+	install -v -m644 -D cohda/llc/llc-api.h           ${ROOTDIR}/images/linux/usr/include/cohda/llc/llc-api.h
+	install -v -m644 -D linux/cohda/debug.h           ${ROOTDIR}/images/linux/usr/include/linux/cohda/debug.h
+	install -v -m644 -D linux/cohda/debug-app.h       ${ROOTDIR}/images/linux/usr/include/linux/cohda/debug-app.h
+	install -v -m644 -D linux/cohda/debug-kernel.h    ${ROOTDIR}/images/linux/usr/include/linux/cohda/debug-kernel.h
+	install -v -m644 -D linux/cohda/pktbuf.h          ${ROOTDIR}/images/linux/usr/include/linux/cohda/pktbuf.h
+	install -v -m644 -D linux/cohda/pktbuf-app.h      ${ROOTDIR}/images/linux/usr/include/linux/cohda/pktbuf-app.h
+	install -v -m644 -D linux/cohda/pktbuf-kernel.h   ${ROOTDIR}/images/linux/usr/include/linux/cohda/pktbuf-kernel.h
+	install -v -m644 -D linux/cohda/llc/llc.h         ${ROOTDIR}/images/linux/usr/include/linux/cohda/llc/llc.h
+	install -v -m644 -D linux/cohda/llc/llc-api.h     ${ROOTDIR}/images/linux/usr/include/linux/cohda/llc/llc-api.h
+fi
+
+# Build SXF5x00 Tools
+if [[ -d ${ROOTDIR}/build/safboot ]]; then
+	cd "${ROOTDIR}/build/safboot/v2xHostBootApp"
+
+	make CC="${CROSS_COMPILE}gcc" EXTERNAL_CFLAGS="-I${ROOTDIR}/images/linux/usr/include/" V2X_TARGET=srimx8dxlsom bootlib
+	install -v -d ${ROOTDIR}/images/linux/usr/lib/
+	install -v -m644 ../install/srimx8dxlsom/*.so                     ${ROOTDIR}/images/linux/usr/lib/
+	install -v -m644 ../install/srimx8dxlsom/*.so*                    ${ROOTDIR}/images/linux/usr/lib/
+	install -v -m644 -D ../v2xHostBootLib/inc/v2xHostBootCmdProc.h    ${ROOTDIR}/images/linux/usr/include/v2xHostBootCmdProc.h
+	install -v -m644 -D ../v2xHostBootLib/inc/v2xHostBootCommon.h     ${ROOTDIR}/images/linux/usr/include/v2xHostBootCommon.h
+	install -v -m644 -D ../v2xHostBootLib/inc/v2xHostBootInterface.h  ${ROOTDIR}/images/linux/usr/include/v2xHostBootInterface.h
+
+	make CC="${CROSS_COMPILE}gcc" EXTERNAL_CFLAGS="-I${ROOTDIR}/images/linux/usr/include/" V2X_TARGET=srimx8dxlsom app
+	install -v -m755 -D v2x_saf_boot                                  ${ROOTDIR}/images/linux/usr/sbin/v2x_saf_boot
+fi
+
+# Install SXF5x00 Firmware Images
+if [[ -d ${ROOTDIR}/build/saffirmware ]]; then
+	cd "${ROOTDIR}/build/saffirmware"
+
+	install -d ${ROOTDIR}/images/linux/usr/lib/firmware/
+	install -v -m644 -c SAF5X00_SBL.bin             ${ROOTDIR}/images/linux/usr/lib/firmware/
+	install -v -m644 -c SAF5X00_SBL_FLASH.bin       ${ROOTDIR}/images/linux/usr/lib/firmware/
+	install -v -m644 -c SAF5X00_SDR_SDIO.bin        ${ROOTDIR}/images/linux/usr/lib/firmware/
+	install -v -m644 -c SAF5X00_SDR_SDIO_FLASH.bin  ${ROOTDIR}/images/linux/usr/lib/firmware/
+fi
+
+# Build SXF1800 library and tools
+if [[ -d ${ROOTDIR}/build/sxf1800 ]]; then
+	cd "${ROOTDIR}/build/sxf1800"
+
+	export V2XSE_CFG_BOARD=srimx8dxl
+	export V2XSE_CFG_BLD=retail
+	export EXT_GLOBAL_CFLAGS="-DCONFIG_SPI_DAV=1 -DCONFIG_SERDY_EVT=1 -DCONFIG_POWER_CYCLE=0"
+	export V2XSE_CFG_BLD_LIB=shared
+
+	dpkg --add-architecture arm64 && apt update
+	apt -y install libssl-dev:arm64
+
+	make -C "${ROOTDIR}/build/sxf1800/v2xCrypto" CC="${CROSS_COMPILE}gcc" v2xlibs
+	make -C "${ROOTDIR}/build/sxf1800/v2xCrypto" CC="${CROSS_COMPILE}gcc" INSTALLDIR=${ROOTDIR}/images/linux install
+
+	make -C "${ROOTDIR}/build/sxf1800/cliUtilities" CC="${CROSS_COMPILE}gcc" all
+	make -C "${ROOTDIR}/build/sxf1800/cliUtilities" CC="${CROSS_COMPILE}gcc" INSTALLDIR=${ROOTDIR}/images/linux install
+fi
+
 # regenerate modules dependencies
 depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux-build/System.map" ${KRELEASE}
 
@@ -279,7 +367,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,gpsd-clients,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,libpcap0.8,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget,wpasupplicant,xterm \
+		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,gpsd-clients,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,libpcap0.8,libgps28,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget,wpasupplicant,xterm \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian
@@ -307,6 +395,9 @@ update-command-not-found
 
 # populate fstab
 printf "/dev/root / ext4 defaults 0 1\\n" > /etc/fstab
+
+# start saf-llc on boot
+ln -s /etc/systemd/system/saf-llc.service /etc/systemd/system/multi-user.target.wants/saf-llc.service
 
 # delete self
 rm -f /stage2.sh
@@ -355,7 +446,7 @@ find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${
 find "${ROOTDIR}/images/linux" -type l -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
 # Add overlay to rootfs
-find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
 # assemble final disk image
 rm -f "${ROOTDIR}/images/emmc.img"

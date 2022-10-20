@@ -1,4 +1,4 @@
-From b84e865712789df53aa0ac11565a4e4de0c4659c Mon Sep 17 00:00:00 2001
+From 65fb5db4b7a86fef1a2e476b293daf4d4778b3f3 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 4 Dec 2022 12:44:29 +0200
 Subject: [PATCH 05/12] cw-llc: support SolidRun i.MX8DXL SoM
@@ -21,5 +21,5 @@ index 921b393..6c4400e 100644
  #define LLC_SDIO_ENABLE 1
  #endif
 -- 
-2.30.2
+2.39.0
 

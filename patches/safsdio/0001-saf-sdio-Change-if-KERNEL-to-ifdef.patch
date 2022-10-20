@@ -1,0 +1,25 @@
+From f67f42e486f4ca0503cdfe26dfa00bd3ee9a1db9 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Tue, 20 Dec 2022 19:05:51 +0100
+Subject: [PATCH] saf-sdio: Change #if KERNEL to #ifdef
+
+---
+ include/saf_sdio.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/saf_sdio.h b/include/saf_sdio.h
+index 1085e2c..265d05f 100644
+--- a/include/saf_sdio.h
++++ b/include/saf_sdio.h
+@@ -37,7 +37,7 @@
+ #ifndef SAF_SDIO_H
+ #define SAF_SDIO_H
+ 
+-#if __KERNEL__
++#ifdef __KERNEL__
+ 
+ #include <linux/cdev.h>
+ #include <linux/atomic.h>
+-- 
+2.39.0
+

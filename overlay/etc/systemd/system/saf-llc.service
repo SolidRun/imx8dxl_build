@@ -1,0 +1,13 @@
+[Unit]
+Description=SAF5400 Driver (SDIO)
+# network.target was too early in the boot process
+After=getty.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/saf5400-start-sdio
+ExecStop=/usr/sbin/saf5400-stop
+
+[Install]
+WantedBy=default.target

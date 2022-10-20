@@ -1,0 +1,111 @@
+From d6ea043abd15986029e94496473a503397e68b06 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 09:30:32 +0100
+Subject: [PATCH 06/12] llc app: Use libpcap from system
+
+---
+ app/llc/lib/Makefile | 54 ++------------------------------------------
+ 1 file changed, 2 insertions(+), 52 deletions(-)
+
+diff --git a/app/llc/lib/Makefile b/app/llc/lib/Makefile
+index 0ebbb64..a3a059d 100644
+--- a/app/llc/lib/Makefile
++++ b/app/llc/lib/Makefile
+@@ -10,46 +10,12 @@ else
+   EXTRA_CFLAGS += -O2
+ endif
+ 
+-# PCAP
+-PCAP_SRC_DIR ?= $(CURDIR)/../../../../bsp/app/libpcap
+-PCAP_LIB_DIR := $(CURDIR)/libpcap
+-PCAP_APP_BIN := $(PCAP_LIB_DIR)/libpcap.a
+-
+ # If using yocto/poky toolchain, use CC in environment
+ ifeq (,$(TARGET_PREFIX))
+   CC := "$(CROSS_COMPILE)gcc"
+   CC := $(subst $\",,$(CC))
+ endif
+ 
+-ifneq (,$(findstring $(BOARD),mk5))
+-endif
+-ifneq (,$(findstring $(BOARD),sie))
+-  CROSS_COMPILE := /opt/yocto-1.8.10/x86_64/sysroots/x86_64-siesdk-linux/usr/bin/arm-sie-linux-gnueabi/arm-sie-linux-gnueabi-
+-  CC := "$(CROSS_COMPILE)gcc"
+-  CFLAGS := -march=armv7-a -mfloat-abi=hard -mfpu=neon -mtune=cortex-a9 --sysroot=/opt/yocto-1.8.10/x86_64/sysroots/cortexa9hf-vfp-neon-sie-linux-gnueabi
+-  INSTALLDIR := /tmp/sie
+-  PCAP_SRC_DIR :=
+-  PCAP_LIB_DIR := /opt/yocto-1.8.10/x86_64/sysroots/cortexa9hf-vfp-neon-sie-linux-gnueabi/usr/lib
+-  PCAP_APP_BIN := $(PCAP_LIB_DIR)/libpcap.so
+-endif
+-ifneq (,$(findstring $(BOARD),dgm qnx qnx-arm qnx-x86 mq5 re2q))
+-  QNX_BASE ?= $(HOME)/qnx660
+-  QNX_ENV ?= $(QNX_BASE)/qnx660-env.sh
+-  CC = source $(QNX_ENV); qcc
+-  ifneq (,$(findstring $(BOARD),dgm qnx-arm mq5 re2q))
+-    QCC_OPT = gcc_ntoarmv7le
+-    TARGET = armle-v7
+-  else
+-    QCC_OPT = gcc_ntox86
+-    TARGET = x86
+-  endif
+-  CFLAGS = -V $(QCC_OPT) -DBOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+-  PCAP_SRC_DIR :=
+-  PCAP_LIB_DIR := $(QNX_BASE)/target/qnx6/$(TARGET)/usr/lib
+-  PCAP_APP_BIN := $(PCAP_LIB_DIR)/libpcap.a
+-  COHDA_INCLUDE_DIR ?= ../../../qnx/include
+-endif
+-
+ COHDA_INCLUDE_DIR ?= ../../../kernel/include
+ 
+ # Fallback defaults (host)
+@@ -62,10 +28,9 @@ CFLAGS += -Wall -Werror -MD -shared -fPIC \
+ EXTRA_CFLAGS += -I. \
+                 -I.. \
+                 -I$(COHDA_INCLUDE_DIR) \
+-                -I$(PCAP_LIB_DIR) \
+                 -D__LLC__ \
+ 
+-LDFLAGS += -L$(PCAP_LIB_DIR) -lpcap
++LDFLAGS += -lpcap
+ 
+ LIBS +=
+ 
+@@ -105,10 +70,9 @@ CFLAGS += -DFUZZTEST
+ endif
+ 
+ 
+-$(APP): $(PCAP_APP_BIN) $(LIBS) $(OBJS)
++$(APP): $(LIBS) $(OBJS)
+ 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
+ 	@cp $@ ../
+-	@cp $(PCAP_APP_BIN) ./
+ 
+ %.o: %.c
+ 	-@mkdir --parents $(shell dirname $(DEPDIR)/$*.d)
+@@ -116,23 +80,9 @@ $(APP): $(PCAP_APP_BIN) $(LIBS) $(OBJS)
+ 	@echo $@: Makefile >> $*.d
+ 	@mv -f $*.d $(DEPDIR)/$*.d
+ 
+-$(PCAP_APP_BIN):
+-# only rebuild if we have source for it - we don't on QNX
+-ifneq (,$(PCAP_SRC_DIR))
+-	echo Making $(PCAP_APP_BIN) for $(BOARD)
+-	make -C $(PCAP_SRC_DIR) BOARD=$(BOARD)
+-	rm -rf $(PCAP_LIB_DIR)
+-	ln -s $(PCAP_SRC_DIR)/$(BOARD) $(PCAP_LIB_DIR)
+-endif
+-	test -f $@
+-
+ clean:
+ 	find . -name "*.o" -delete
+ 	rm -f $(APP) $(OBJS) *.o *.so *.so.map ../$(APP)
+-# only remove it we have source for it - we don't on QNX
+-ifneq (,$(PCAP_SRC_DIR))
+-	rm -f ./$(PCAP_APP_BIN) $(PCAP_LIB_DIR)
+-endif
+ 	rm -rf $(DEPDIR)/*
+ 	rm -rf $(DEPDIR)
+ 
+-- 
+2.39.0
+

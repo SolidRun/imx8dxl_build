@@ -1,0 +1,39 @@
+From 8e11af50d66f372fb3e1a2e06a6881f051e0ce23 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Wed, 21 Dec 2022 15:02:11 +0100
+Subject: [PATCH 2/2] v2x-saf-boot: Install lib as required by ldd
+
+The v2x_saf_boot binary depends on the libraries ending in .so.3.5, but
+only .so and .so.3.5.0 are installed.
+---
+ v2xHostBootLib/Makefile | 1 +
+ v2xHostPal/Makefile     | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/v2xHostBootLib/Makefile b/v2xHostBootLib/Makefile
+index db010fa..a52a512 100755
+--- a/v2xHostBootLib/Makefile
++++ b/v2xHostBootLib/Makefile
+@@ -21,6 +21,7 @@ sharedLibBuild:
+ 	mkdir -p $(TARGET_FOLDER)
+ 	$(CC) $(EXTERNAL_LDFLAGS) -shared -Wl,-soname,lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR) -o lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH)  *.o 
+ 	cp lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH)  $(TARGET_FOLDER)/lib$(BOOTTOOL_LIB).so
++	cp lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH)  $(TARGET_FOLDER)/lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR)
+ 	mv lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH)  $(TARGET_FOLDER)/lib$(BOOTTOOL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH)
+ 		
+ clean:
+diff --git a/v2xHostPal/Makefile b/v2xHostPal/Makefile
+index 9ffd858..4a2c317 100755
+--- a/v2xHostPal/Makefile
++++ b/v2xHostPal/Makefile
+@@ -33,6 +33,7 @@ sharedLibBuild:
+ 	mkdir -p $(TARGET_FOLDER)	
+ 	$(CC) $(EXTERNAL_LDFLAGS) -shared -Wl,-soname,lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR) -o lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH) *.o 
+ 	cp lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH) $(TARGET_FOLDER)/lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH)
++	cp lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH) $(TARGET_FOLDER)/lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR)
+ 	mv lib$(PAL_LIB).so.$(V2X_CFG_REL_MAJOR).$(V2X_CFG_REL_MINOR).$(V2X_CFG_REL_PATCH) $(TARGET_FOLDER)/lib$(PAL_LIB).so
+ 	
+ 
+-- 
+2.39.0
+

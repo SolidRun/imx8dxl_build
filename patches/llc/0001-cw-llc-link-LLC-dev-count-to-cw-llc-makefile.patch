@@ -1,4 +1,4 @@
-From 8775efb39747198c8ecff43227f441b41d46cc94 Mon Sep 17 00:00:00 2001
+From f12ae605fd05b2b677559d93a4590dbaaf464c40 Mon Sep 17 00:00:00 2001
 From: pferrao <pedro.ferrao@strypes.pt>
 Date: Mon, 4 Oct 2021 10:29:28 +0100
 Subject: [PATCH 01/12] cw-llc: link LLC dev count to cw-llc makefile
@@ -50,5 +50,5 @@ index 7330a78..762e261 100644
  
  //------------------------------------------------------------------------------
 -- 
-2.30.2
+2.39.0
 

@@ -1,4 +1,4 @@
-From 19b3d3286988f7fa7f153911b61dd05a1d8031bf Mon Sep 17 00:00:00 2001
+From ed32f22998d07a81ab0786a3a7cea2f6540bb3de Mon Sep 17 00:00:00 2001
 From: pferrao <pedro.ferrao@strypes.pt>
 Date: Thu, 26 May 2022 09:24:43 +0100
 Subject: [PATCH 03/12] cw-llc: support for kernel 5.15 netdev struct changes
@@ -75,5 +75,5 @@ index dbf7604..e09cfb6 100644
    .ndo_change_mtu = LLC_NetDevChangeMTU,
    .ndo_set_mac_address = LLC_NetDevSetMACAddr,
 -- 
-2.30.2
+2.39.0
 
