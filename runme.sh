@@ -3,6 +3,7 @@
 ### Options
 : ${CROSS_COMPILE:=aarch64-linux-gnu-}
 : ${SOC_REVISION:=A0}
+: ${IMAGE_SIZE_MiB:=1000}
 
 ### Versions
 ATF_GIT_URI=https://source.codeaurora.org/external/imx/imx-atf
@@ -285,7 +286,7 @@ EOF
 	chmod +x stage1/stage2.sh
 
 	# create empty partition image
-	dd if=/dev/zero of=rootfs.e2.orig bs=1 count=0 seek=1000M
+	dd if=/dev/zero of=rootfs.e2.orig bs=1 count=0 seek=${IMAGE_SIZE_MiB}M
 
 	# create filesystem from first stage
 	mkfs.ext2 -L rootfs -E root_owner=0:0 -d stage1 rootfs.e2.orig
@@ -323,7 +324,7 @@ find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}
 
 # assemble final disk image
 rm -f "${ROOTDIR}/images/emmc.img"
-dd if=/dev/zero of="${ROOTDIR}/images/emmc.img" bs=1 count=0 seek=1024M
+dd if=/dev/zero of="${ROOTDIR}/images/emmc.img" bs=1 count=0 seek=$(($IMAGE_SIZE_MiB + 24))M
 printf "o\nn\np\n1\n49152\n\na\nw\n" | fdisk "${ROOTDIR}/images/emmc.img"
 dd of="${ROOTDIR}/images/emmc.img" if="${ROOTDIR}/build/debian/rootfs.e2" ibs=1M seek=24 obs=1M
 echo "Finished generating disk image."
