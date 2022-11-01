@@ -19,12 +19,14 @@ SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.32_2.0.0_SCFWKI
 SCFW_RELEASE=1.13.0
 LINUX_GIT_URI=https://source.codeaurora.org/external/imx/linux-imx
 LINUX_RELEASE=lf-5.15.32-2.0.0
+PHYTOOL_GIT_URI=https://github.com/wkz/phytool.git
+PHYTOOL_RELEASE=b8237fc69000d205ca0c59efe9462d3115077f6c # latest master as of 2022-11-01
 
 ###
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw linux"
+COMPONENTS="atf uboot mkimage seco scfw linux phytool"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
@@ -221,6 +223,12 @@ label linux
 	append root=/dev/mmcblk0p1 ro rootwait
 EOF
 
+# Build phytool
+cd "${ROOTDIR}/build/phytool"
+make CC="${CROSS_COMPILE}gcc" all
+install -d "${ROOTDIR}/images/linux/usr/local/sbin/"
+install -c phytool "${ROOTDIR}/images/linux/usr/local/sbin/"
+
 # Build V2X kernel drivers
 if [[ -d ${ROOTDIR}/V2XSW ]]; then
 	cd "${ROOTDIR}/V2XSW/src/saf-sdio"
@@ -245,7 +253,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget,wpasupplicant \
+		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,libnss-resolve,initramfs-tools,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,systemd-timesyncd,tio,usbutils,wget,wpasupplicant \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian
@@ -273,6 +281,14 @@ update-command-not-found
 
 # populate fstab
 printf "/dev/root / ext4 defaults 0 1\\n" > /etc/fstab
+
+# start sja1110-patch on boot
+ln -s /etc/systemd/system/sja1110-patch.service /etc/systemd/system/multi-user.target.wants/sja1110-patch.service
+
+# enable systemd-networkd and re-configure DNS
+systemctl enable systemd-networkd
+systemctl enable systemd-resolved
+ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
 # delete self
 rm -f /stage2.sh

@@ -1,0 +1,11 @@
+[Unit]
+Description=SJA1110 disable power-down mode
+Before=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/phytool write lan1/1/0x18 0x60
+
+[Install]
+WantedBy=multi-user.target
