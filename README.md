@@ -517,11 +517,15 @@ As a workaround - install [phytool](https://github.com/wkz/phytool.git) - then u
 
 #### MDIX
 
-Auto-MDIX is not supported for 100Base-TX.
+Auto-MDIX is not available by default for 100Base-TX.
 For direct device to device connections a crossover cable is recommended.
 
-Alternatively manual MDIX is supported through PHY register 0x11 bit 6:
+Alternatively automatic MDIX can be enabled through PHY register 0x11 bit 7; manual MDIX through bit 6:
 
+    # Auto-MDIX
+    phy=lan1/1; phytool write $phy/0x11 0x80
+
+    # Manual MDIX
     phy=lan1/1; phytool write $phy/0x11 0x40
 
 ### T1
