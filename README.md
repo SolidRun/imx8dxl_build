@@ -517,23 +517,9 @@ Switch port #1 is exposed on the V2X Adapter as "lan1":
             TX packets 12  bytes 936 (936.0 B)
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
-Due to a bug in the switch driver, the phy will not turn on by itself.
-As a workaround - install [phytool](https://github.com/wkz/phytool.git) - then unset bit 0 at register 0x18 - to disable power-down mode:
-
-    phy=lan1/1; phytool write $phy/0x18 0x60
-
 #### MDIX
 
-Auto-MDIX is not available by default for 100Base-TX.
-For direct device to device connections a crossover cable is recommended.
-
-Alternatively automatic MDIX can be enabled through PHY register 0x11 bit 7; manual MDIX through bit 6:
-
-    # Auto-MDIX
-    phy=lan1/1; phytool write $phy/0x11 0x80
-
-    # Manual MDIX
-    phy=lan1/1; phytool write $phy/0x11 0x40
+Auto-MDIX is ~~not available by default for 100Base-TX~~ enabled using a special phy driver from NXP, which is integrated in this release.
 
 ### T1
 
