@@ -1,0 +1,19 @@
+uuu_version 1.2.39
+
+SDPS: boot -f images/uboot.bin
+
+CFG: FB: -vid 0x1fc9 -pid 0x0152
+
+FB: ucmd setenv kernel_addr_r 0x80800000
+FB: ucmd setenv fdt_addr_r 0x80700000
+FB: ucmd setenv ramdisk_addr_r 0x84800000
+FB: ucmd setenv fastboot_buffer ${kernel_addr_r}
+FB: download -f build/linux/arch/arm64/boot/Image
+FB: ucmd setenv fastboot_buffer ${fdt_addr_r}
+FB: download -f build/linux/arch/arm64/boot/dts/freescale/imx8dxl-v2x.dtb
+FB: ucmd setenv fastboot_buffer ${ramdisk_addr_r}
+FB: download -f images/initrd
+FB: ucmd setenv bootargs console=ttyLP0,115200 earlycon log_level=9
+FB: ucmd setenv rdargs ${ramdisk_addr_r}:0x${fastboot_bytes}
+FB: acmd booti ${kernel_addr_r} ${rdargs} ${fdt_addr_r}
+FB: done

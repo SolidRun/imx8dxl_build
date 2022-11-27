@@ -96,7 +96,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 
    The last line indicates that the bootloader is waiting for further USB commands via the fastboot protocol. By pressing Ctrl+C the U-Boot commandline can be accessed instead.
 
-## Flash Disk Image to eMMC
+### Flash U-Boot and Disk Image to eMMC
 
 All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
 
@@ -136,6 +136,66 @@ All steps in this section require using NXPs `uuu` application to interface with
        ...
 
 7. Once the `uuu` command indicates "done", the flashing is complete.
+
+### Boot Linux without flashing
+
+This section is useful for development or testing only, when explicitly trying to avoid flashing the eMMC. If you intend to evaluate the device or software, please instead flash the build results to eMMC.
+
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Customise `boot.uuu` at the root of imx8dxl_build folder with a text editor, to choose specific kernel, device-tree and initrd paths. By default kernel and device-tree are taken from the last build while initrd should be created by the user at `images/initrd`.
+4. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+5. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to send u-boot, kernel and initramfs:
+   `[path-to-]uuu boot.uuu`
+6. Connect to power, or reset the device.
+7. The serial console should now provide access to the early boot log, showing progress of loading the system to RAM till eventually Linux is started:
+
+          U-Boot 2022.04-00004-gc20edd9a31-dirty (Nov 17 2022 - 13:25:39 +0000)
+
+       CPU:   NXP i.MX8DXL RevA1 A35 at 1200 MHz at 56C
+
+       Model: SolidRun i.MX8DXL SoM
+       Board: SolidRun i.MX8DXL SoM
+       Boot:  USB
+       DRAM:  1019.8 MiB
+       Core:  148 devices, 18 uclasses, devicetree: separate
+       MMC:   FSL_SDHC: 0
+       Loading Environment from MMC... OK
+       In:    serial
+       Out:   serial
+       Err:   serial
+
+        BuildInfo:
+         - SCFW 8172eaea, SECO-FW b3c3cbc7, IMX-MKIMAGE a8bb8edb, ATF c6a19b1
+         - U-Boot 2022.04-00004-gc20edd9a31-dirty
+         - V2X-FW 2c8f793d version 0.0.4
+
+       Detect USB boot. Will enter fastboot mode!
+       Net:
+       Warning: ethernet@5b050000 (eth1) using random MAC address - d2:a6:e2:e1:9d:8a
+       eth1: ethernet@5b050000 [PRIME]
+       Fastboot: Normal
+       Boot from USB for uuu
+       Hit any key to stop autoboot:  0
+       Failed to configure default pinctrl
+       warning: id pin does not indicate gadget mode, enabling regardless.
+       Detect USB boot. Will enter fastboot mode!
+       Detect USB boot. Will enter fastboot mode!
+       Detect USB boot. Will enter fastboot mode!
+       Detect USB boot. Will enter fastboot mode!
+       Starting download of 30925312 bytes
+       ...
+       ## Flattened Device Tree blob at 80700000
+          Booting using the fdt blob at 0x80700000
+          Using Device Tree in place at 0000000080700000, end 0000000080710b2d
+
+       Starting kernel ...
+
+       [    0.000000] Booting Linux on physical CPU 0x0000000000 [0x410fd042]
+       ...
+
+   The last line indicates that Linux has been started.
 
 ## Get Started
 

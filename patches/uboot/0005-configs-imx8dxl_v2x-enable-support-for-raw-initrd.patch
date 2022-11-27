@@ -1,0 +1,24 @@
+From 3d25df19458e46dfaf9b3d09e64955ac12c48afc Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Sun, 27 Nov 2022 10:33:40 +0200
+Subject: [PATCH] configs: imx8dxl_v2x: enable support for raw initrd
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ configs/imx8dxl_v2x_defconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/configs/imx8dxl_v2x_defconfig b/configs/imx8dxl_v2x_defconfig
+index 570ab07f39..804daa6810 100644
+--- a/configs/imx8dxl_v2x_defconfig
++++ b/configs/imx8dxl_v2x_defconfig
+@@ -188,3 +188,6 @@ CONFIG_SYS_MMC_ENV_DEV=0
+ # force distro-boot as default
+ CONFIG_USE_BOOTCOMMAND=y
+ CONFIG_BOOTCOMMAND="run distro_bootcmd"
++
++# support initrd without u-boot header
++CONFIG_SUPPORT_RAW_INITRD=y
+-- 
+2.38.1
+
