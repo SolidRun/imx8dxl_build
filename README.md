@@ -577,6 +577,9 @@ Switch port #1 is exposed on the V2X Adapter as "lan1":
             TX packets 12  bytes 936 (936.0 B)
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
+The interface is automatically configured using DHCP at boot-time, if a link is detected. Otherwise manual `ifdown lan1; ifup lan1` may be needed after connecting a cable.
+For other configurations modify `overlay/etc/network/interfaces.d/lan1` before the build, or `/etc/network/interfaces.d/lan1` on the target system accordingly.
+
 #### MDIX
 
 Auto-MDIX is ~~not available by default for 100Base-TX~~ enabled using a special phy driver from NXP, which is integrated in this release.

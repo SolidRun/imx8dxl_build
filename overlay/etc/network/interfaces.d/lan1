@@ -1,0 +1,3 @@
+allow-hotplug lan1
+iface lan1 inet dhcp
+iface lan1 inet6 auto
