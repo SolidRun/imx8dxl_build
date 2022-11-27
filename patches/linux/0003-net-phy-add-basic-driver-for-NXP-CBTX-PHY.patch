@@ -1,7 +1,7 @@
-From 970d31f5ce9c5b483f1de1fee2a92318c1654bfa Mon Sep 17 00:00:00 2001
+From 95b311edd3893f3635711ed759d8bb65eee3bb96 Mon Sep 17 00:00:00 2001
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 Date: Tue, 8 Nov 2022 19:09:25 +0200
-Subject: [PATCH 17/17] net: phy: add basic driver for NXP CBTX PHY
+Subject: [PATCH 3/6] net: phy: add basic driver for NXP CBTX PHY
 
 The CBTX PHY is a Fast Ethernet PHY integrated into the SJA1110 A/B/C
 automotive Ethernet switches.

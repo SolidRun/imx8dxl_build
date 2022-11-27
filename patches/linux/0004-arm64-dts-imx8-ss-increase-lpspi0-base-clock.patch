@@ -1,7 +1,7 @@
-From 19f6a014dd5404eb290ba07d3fdc1290d0d4ea1f Mon Sep 17 00:00:00 2001
+From 6732d05c8125b3543ecb20f20337cdd371489bfc Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 30 Aug 2022 10:11:46 +0300
-Subject: [PATCH 4/9] arm64: dts: imx8-ss: increase lpspi0 base clock
+Subject: [PATCH 4/6] arm64: dts: imx8-ss: increase lpspi0 base clock
 
 Change the clock for first spi controller to 60MHz, same as used for all
 other SPIs.
@@ -28,5 +28,5 @@ index 83813cbbb7c2..c70d9b868acd 100644
  		dma-names = "tx","rx";
  		dmas = <&edma2 1 0 0>, <&edma2 0 0 1>;
 -- 
-2.37.2
+2.38.1
 

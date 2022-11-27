@@ -6,19 +6,19 @@
 : ${IMAGE_SIZE_MiB:=1000}
 
 ### Versions
-ATF_GIT_URI=https://source.codeaurora.org/external/imx/imx-atf
-ATF_RELEASE=tags/lf-5.15.32-2.0.0
-UBOOT_GIT_URI=https://source.codeaurora.org/external/imx/uboot-imx
-UBOOT_RELEASE=tags/lf-5.15.32-2.0.0
-MKIMAGE_GIT_URI=https://source.codeaurora.org/external/imx/imx-mkimage
-MKIMAGE_RELEASE=tags/lf-5.15.32-2.0.0
-SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-3.8.6.bin
-SECO_RELEASE=3.8.6
-SCFW_FILE=imx-scfw-porting-kit-1.13.0.tar.gz
-SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.32_2.0.0_SCFWKIT-1.13.0&appType=license"
-SCFW_RELEASE=1.13.0
-LINUX_GIT_URI=https://source.codeaurora.org/external/imx/linux-imx
-LINUX_RELEASE=lf-5.15.32-2.0.0
+ATF_GIT_URI=https://github.com/nxp-imx/imx-atf
+ATF_RELEASE=tags/lf-5.15.52-2.1.0
+UBOOT_GIT_URI=https://github.com/nxp-imx/uboot-imx
+UBOOT_RELEASE=tags/lf-5.15.52-2.1.0
+MKIMAGE_GIT_URI=https://github.com/nxp-imx/imx-mkimage
+MKIMAGE_RELEASE=tags/lf-5.15.52-2.1.0
+SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-5.8.7.1.bin
+SECO_RELEASE=5.8.7.1
+SCFW_FILE=L5.15.52_2.1.0_SCFWKIT-1.14.0.tar.gz
+SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.52_2.1.0_SCFWKIT-1.14.0&appType=license"
+SCFW_RELEASE=1.14.0
+LINUX_GIT_URI=https://github.com/nxp-imx/linux-imx
+LINUX_RELEASE=lf-5.15.52-2.1.0
 
 ###
 
@@ -90,8 +90,7 @@ for i in $COMPONENTS; do
 
 		# scfw porting kit is multi-wrapped :(
 		if [[ $i == scfw ]]; then
-			TARBALL=imx-scfw-porting-kit-${SCFW_RELEASE}.tar*
-			tar --wildcards --strip-components=2 -xvf $TARBALL "*.bin"
+			tar --wildcards --strip-components=2 -xvf $SCFW_FILE "*.bin"
 
 			if [ $? -ne 0 ]; then
 				echo "Warning: Failed to extract scfw porting kit layer 1!"

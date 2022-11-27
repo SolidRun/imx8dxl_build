@@ -1,7 +1,7 @@
-From c20edd9a31a40bbfad763126950d18ce0be8d1ac Mon Sep 17 00:00:00 2001
+From 035261b6161979473f0e33c7b4eb7d8d31856012 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 25 Oct 2022 16:26:08 +0300
-Subject: [PATCH] HACK: usb: ci_udc: ignore ID pin value
+Subject: [PATCH 2/3] HACK: usb: ci_udc: ignore ID pin value
 
 Both ID pins are floating, and they are valid only for microUSB
 connectors. Ignore the value and enable gadget mode regardless if
@@ -13,7 +13,7 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/usb/gadget/ci_udc.c b/drivers/usb/gadget/ci_udc.c
-index 5f8fc7d651..306c588f7e 100644
+index 2bae39347d..1f22a1ca9f 100644
 --- a/drivers/usb/gadget/ci_udc.c
 +++ b/drivers/usb/gadget/ci_udc.c
 @@ -1456,7 +1456,7 @@ static int ci_udc_otg_probe(struct udevice *dev)
@@ -26,5 +26,5 @@ index 5f8fc7d651..306c588f7e 100644
  	priv->ctrl.hccr = (struct ehci_hccr *)((ulong)&ehci->caplength);
  	priv->ctrl.hcor = (struct ehci_hcor *)((ulong)priv->ctrl.hccr +
 -- 
-2.38.0
+2.38.1
 

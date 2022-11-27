@@ -1,7 +1,7 @@
-From 2af71d8830f65dd7271b19de291c12fc0a7a26d7 Mon Sep 17 00:00:00 2001
+From cbed44be72a5da65d201c40aec5da5bbfca9d652 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 26 Jul 2022 13:06:56 +0300
-Subject: [PATCH 2/3] HACK: fastboot emmc_dev default to 0
+Subject: [PATCH 1/3] HACK: fastboot emmc_dev default to 0
 
 For some strange reason env_get does not actually return the value of
 currently (in memory) set value of emmc_dev.
@@ -13,12 +13,12 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
-index 4f930ac19c..5022eddcfa 100644
+index 237ae875ab..3fedad22d2 100644
 --- a/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
 +++ b/drivers/fastboot/fb_fsl/fb_fsl_partitions.c
 @@ -64,7 +64,7 @@ static ulong bootloader_mmc_offset(void)
  			return 0x8000;
- 	} else if (is_imx8mn() || is_imx8mp() || is_imx8dxl() || is_imx8ulp()) {
+ 	} else if (is_imx8mn() || is_imx8mp() || is_imx8dxl() || is_imx8ulp() || is_imx93()) {
  		/* target device is eMMC boot0 partition, bootloader offset is 0x0 */
 -		if (env_get_ulong("emmc_dev", 10, 2) == fastboot_devinfo.dev_id)
 +		if (env_get_ulong("emmc_dev", 10, 0) == fastboot_devinfo.dev_id)
@@ -26,5 +26,5 @@ index 4f930ac19c..5022eddcfa 100644
  		else
  			return 0x8000;
 -- 
-2.37.2
+2.38.1
 
