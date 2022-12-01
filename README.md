@@ -485,6 +485,19 @@ Finally the active calibration can be stored to the EEPROM:
     # write calibration to eeprom
     llc reg w 6 4000 2000
 
+## Secure Element (SXF1800)
+
+### Power Switch
+
+Control of the 1.8V supply to the SXF1800 is provided by the [regulator userspace consumer driver](https://community.nxp.com/t5/i-MX-Processors-Knowledge-Base/regulator-userspace-consumer/ta-p/1389948?attachment-id=137153).
+It allows changing the state between enabled and disabled through a file in sysfs:
+
+    cat /sys/devices/platform/userspace-consumer-v2x-secure-1v8/state
+    echo enabled > /sys/devices/platform/userspace-consumer-v2x-secure-1v8/state
+    echo disabled > /sys/devices/platform/userspace-consumer-v2x-secure-1v8/state
+
+By default at boot-time the power will be enabled.
+
 ## IOs (Adapter Board)
 
 ### CAN-Bus (J8, J9)
