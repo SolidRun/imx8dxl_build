@@ -317,44 +317,40 @@ Install them by flashing the new disk image, or copying individually (`images/li
 ### Compile Application(s)
 
 The utilities for booting firmware on the Modem can be installed natively from the running system.
-Copy the zipfile to the system, e.g. via `scp` - then follow below commands:
+Take the following source files from NXP V2X BSP v0.15 (*linux-imx8dxl-v0.15.tgz*):
 
-    apt-get install build-essential libpcap-dev libgps-dev unzip net-tools
+- bsp/v2x-src/saf5x00/firmware_RFP2.5.tgz
+- bsp/v2x-src/saf5x00/llc_RFP2.5.tgz
+- bsp/v2x-src/saf5x00/v2x_saf_boot_RFP3.5.0.tgz
 
-    unzip V2XSW.zip
-    cd V2XSW
+Copy them to the system, e.g. via `scp` - then follow below commands:
 
-    # APPLY PATCHES
+    apt-get install --no-install-recommends build-essential libgps-dev libpcap-dev
 
-    pushd src/cohda/app/llc
-    make BOARD=aarch64 -j2
-    make install
+    tar -C /usr/lib -xvf firmware_RFP2.5.tgz
+
+    tar -xvf v2x_saf_boot_RFP3.5.0.tgz
+    pushd v2x_saf_boot
+    # Apply all Patches!
+    make -C v2xHostBootApp V2X_TARGET=srimx8dxlsom
+    install -v -m755 -o root -g root install/srimx8dxlsom/v2x_saf_boot /usr/sbin/
+    install -v -m644 -o root -g root install/srimx8dxlsom/libv2xHostBoot.so.3.5.0 /usr/lib/
+    install -v -m644 -o root -g root install/srimx8dxlsom/libv2xHostPal.so.3.5.0 /usr/lib/
+    ln -sfv libv2xHostBoot.so.3.5.0 /usr/lib/libv2xHostBoot.so.3.5
+    ln -sfv libv2xHostBoot.so.3.5 /usr/lib/libv2xHostBoot.so
+    ln -sfv libv2xHostPal.so.3.5.0 /usr/lib/libv2xHostPal.so.3.5
+    ln -sfv libv2xHostPal.so.3.5 /usr/lib/libv2xHostPal.so
     popd
 
-    pushd src/eab
-    make -j2
-    make install
-    popd
-
-    sudo install -c src/saf-sdio/include/saf_sdio.h /usr/include/linux/
-
-    pushd src/saf-bridge
-    make
-    make install
-    popd
-
-    pushd src/v2x_saf_boot/v2xHostBootApp
-    make V2X_TARGET=srimx8dxlsom
-    make V2X_TARGET=srimx8dxlsom install
-    popd
-
-    pushd src/saf-boot
-    make V2X_TARGET=evkLinux -j2
-    make V2X_TARGET=evkLinux install
-    popd
-
-    pushd src/saf-initscripts
-    sudo make install
+    tar -xvf llc_RFP2.5.tgz
+    pushd llc
+    # Apply all Patches!
+    cd app/llc
+    make PCAP_APP_BIN=/usr/lib/aarch64-linux-gnu/libpcap.so LIBPCAP_BIN="\$(PCAP_APP_BIN)" GPSD_APP_BIN=/usr/lib/aarch64-linux-gnu/libgps.so LLC_DEV_CNT=1 BOARD=
+    install -v -m755 -o root -g root llc /usr/bin/
+    install -v -m644 -o root -g root libLLC.so /usr/lib/
+    install -v -m755 -d -o root -g root /usr/bin/plugin
+    install -v -m644 -o root -g root plugin/*.so /usr/bin/plugin/
     popd
 
 ### Boot the Modem

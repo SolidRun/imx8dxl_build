@@ -1,0 +1,25 @@
+From b84e865712789df53aa0ac11565a4e4de0c4659c Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Sun, 4 Dec 2022 12:44:29 +0200
+Subject: [PATCH 05/12] cw-llc: support SolidRun i.MX8DXL SoM
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ kernel/drivers/cohda/llc/llc-sdio.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kernel/drivers/cohda/llc/llc-sdio.h b/kernel/drivers/cohda/llc/llc-sdio.h
+index 921b393..6c4400e 100644
+--- a/kernel/drivers/cohda/llc/llc-sdio.h
++++ b/kernel/drivers/cohda/llc/llc-sdio.h
+@@ -38,6 +38,7 @@
+      defined(BOARD_RE2L) || \
+      defined(BOARD_RE2Q) || \
+      defined(BOARD_MK6) || \
++     defined(BOARD_SRIMX8DXLSOM) || \
+      defined(__EVO__))
+ #define LLC_SDIO_ENABLE 1
+ #endif
+-- 
+2.30.2
+

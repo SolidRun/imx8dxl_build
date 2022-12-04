@@ -19,12 +19,16 @@ SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.52_2.1.0_SCFWKI
 SCFW_RELEASE=1.14.0
 LINUX_GIT_URI=https://github.com/nxp-imx/linux-imx
 LINUX_RELEASE=lf-5.15.52-2.1.0
+SAFSDIO_FILE=saf-sdio_RFP1.0.4.tgz
+SAFSDIO_FILE_URI="Roadlink BSP v0.15"
+LLC_FILE=llc_RFP2.5.tgz
+LLC_FILE_URI="Roadlink BSP v0.15"
 
 ###
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw linux"
+COMPONENTS="atf uboot mkimage seco scfw linux safsdio llc"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
@@ -71,8 +75,20 @@ for i in $COMPONENTS; do
 
 		if [[ -n ${!FILE_VAR} ]]; then
 			if [[ -f ${ROOTDIR}/${!FILE_VAR} ]]; then
-				mkdir "${ROOTDIR}/build/$i"
-				cp -v "${ROOTDIR}/${!FILE_VAR}" "${ROOTDIR}/build/$i/"
+				if [[ ${!FILE_VAR} =~ \.tgz$ ]]; then
+					tar -C "${ROOTDIR}/build" -xf "${ROOTDIR}/${!FILE_VAR}"
+
+					if [ $? -ne 0 ]; then
+						echo "Error: Failed to unpack \"${!FILE_VAR}\"!"
+					fi
+
+					if [[ $i == safsdio ]]; then
+						mv "${ROOTDIR}/build/saf-sdio" "${ROOTDIR}/build/safsdio"
+					fi
+				else
+					mkdir "${ROOTDIR}/build/$i"
+					cp -v "${ROOTDIR}/${!FILE_VAR}" "${ROOTDIR}/build/$i/"
+				fi
 			else
 				echo "Warning: Missing file ${!FILE_VAR}! Please download manually and place it next to this script."
 
@@ -220,18 +236,25 @@ label linux
 	append root=/dev/mmcblk0p1 ro rootwait
 EOF
 
-# Build V2X kernel drivers
-if [[ -d ${ROOTDIR}/V2XSW ]]; then
-	cd "${ROOTDIR}/V2XSW/src/saf-sdio"
+# Build SAF5x00 SDIO Driver
+if [[ -d ${ROOTDIR}/build/safsdio ]]; then
+	cd "${ROOTDIR}/build/safsdio"
+
 	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M="$PWD" modules
 	install -v -m644 -D saf_sdio.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/saf_sdio.ko"
-
-	cd "${ROOTDIR}/V2XSW/src/cohda/kernel/drivers/cohda/llc"
-	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM modules
-	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
-
-	depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
+	install -v -m644 -D include/saf_sdio.h "${ROOTDIR}/images/linux/usr/include/linux/saf_sdio.h"
 fi
+
+# Build SAF5x00 LLC Driver
+if [[ -d ${ROOTDIR}/build/llc ]]; then
+	cd "${ROOTDIR}/build/llc/kernel/drivers/cohda/llc"
+
+	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM LLC_DEV_CNT=1 modules
+	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
+fi
+
+# regenerate modules dependencies
+depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
 
 # Generate a Debian rootfs
 mkdir -p "${ROOTDIR}/build/debian"

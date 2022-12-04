@@ -1,0 +1,32 @@
+From 2a700d6b10667f579a4368701abb4e4e1d24aa93 Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Sun, 4 Dec 2022 13:03:59 +0200
+Subject: [PATCH 04/12] cw-llc: fix ethtool drvinfo build error with 5.15
+
+Add linux/ethtool.h include so that struct ethtool_drvinfo is defined.
+At some point between 3.5 and 5.15 the include hierarchy changed such
+that the define was no longer included.
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ kernel/drivers/cohda/llc/llc-ipv6.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/kernel/drivers/cohda/llc/llc-ipv6.c b/kernel/drivers/cohda/llc/llc-ipv6.c
+index bbae3ea..6a5c8c2 100644
+--- a/kernel/drivers/cohda/llc/llc-ipv6.c
++++ b/kernel/drivers/cohda/llc/llc-ipv6.c
+@@ -43,6 +43,10 @@
+ #include <linux/etherdevice.h>
+ #endif
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
++#include <linux/ethtool.h>
++#endif
++
+ //-----------------------------------------------------------------------------
+ // Macros & Constants
+ //-----------------------------------------------------------------------------
+-- 
+2.30.2
+

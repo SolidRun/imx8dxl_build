@@ -1,0 +1,25 @@
+From d0ad1e5765128ed937c98ee29998d57f8949b0d1 Mon Sep 17 00:00:00 2001
+From: pferrao <pedro.ferrao@strypes.pt>
+Date: Tue, 4 Jan 2022 16:11:07 +0000
+Subject: [PATCH 02/12] cw-llc: increases the list pool size
+
+---
+ kernel/drivers/cohda/llc/llc-list.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/kernel/drivers/cohda/llc/llc-list.h b/kernel/drivers/cohda/llc/llc-list.h
+index 6cfc661..8add970 100644
+--- a/kernel/drivers/cohda/llc/llc-list.h
++++ b/kernel/drivers/cohda/llc/llc-list.h
+@@ -30,7 +30,7 @@
+ //------------------------------------------------------------------------------
+ 
+ /// How many list items to allocate
+-#define LLC_LISTPOOL_CNT 148U
++#define LLC_LISTPOOL_CNT 255U
+ 
+ /**
+  * @brief  list_for_each_entry_safe - iterate over list of given type safe
+-- 
+2.30.2
+

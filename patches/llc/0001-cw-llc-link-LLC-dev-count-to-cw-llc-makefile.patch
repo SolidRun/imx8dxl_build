@@ -1,0 +1,54 @@
+From 8775efb39747198c8ecff43227f441b41d46cc94 Mon Sep 17 00:00:00 2001
+From: pferrao <pedro.ferrao@strypes.pt>
+Date: Mon, 4 Oct 2021 10:29:28 +0100
+Subject: [PATCH 01/12] cw-llc: link LLC dev count to cw-llc makefile
+
+---
+ kernel/drivers/cohda/llc/Makefile     |  6 ++++++
+ kernel/drivers/cohda/llc/llc-device.h | 13 ++++---------
+ 2 files changed, 10 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/drivers/cohda/llc/Makefile b/kernel/drivers/cohda/llc/Makefile
+index 9ba9bc4..45446e9 100644
+--- a/kernel/drivers/cohda/llc/Makefile
++++ b/kernel/drivers/cohda/llc/Makefile
+@@ -16,6 +16,12 @@ EXTRA_CFLAGS += -I$(M) \
+                 -Wno-unknown-pragmas \
+                 -D__LLC__ -DBOARD_$(shell echo $(BOARD) | tr a-z A-Z)
+ 
++ifeq ($(LLC_DEV_CNT),)
++$(error LLC_DEV_CNT is not set)
++else
++EXTRA_CFLAGS += -DLLC_DEV_CNT=$(LLC_DEV_CNT)
++endif
++
+ ifeq ($(EVO),1)
+   EXTRA_CFLAGS += -D__EVO__
+ endif
+diff --git a/kernel/drivers/cohda/llc/llc-device.h b/kernel/drivers/cohda/llc/llc-device.h
+index 7330a78..762e261 100644
+--- a/kernel/drivers/cohda/llc/llc-device.h
++++ b/kernel/drivers/cohda/llc/llc-device.h
+@@ -46,15 +46,10 @@
+ #define LLC_DEV_MAGIC          (0x011CU)
+ /// 'Magic' value inside a tLLCDriver pointer
+ #define LLC_DRV_MAGIC          (0x11C0U)
+-/// Number of MKx devices supported
+-#if (defined(BOARD_PEVT) || \
+-     defined(BOARD_RE2L) || \
+-     defined(BOARD_RE2Q) || \
+-     defined(BOARD_MK6)  || \
+-     defined(DUAL_SAF))
+-#define LLC_DEV_CNT            (2U)
+-#else
+-#define LLC_DEV_CNT            (1U)
++
++/// Issue an error if the number of LLC device count isn't defined
++#if !defined(LLC_DEV_CNT)
++#error "LLC_DEV_CNT isn't defined."
+ #endif
+ 
+ //------------------------------------------------------------------------------
+-- 
+2.30.2
+

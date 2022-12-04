@@ -1,0 +1,79 @@
+From 19b3d3286988f7fa7f153911b61dd05a1d8031bf Mon Sep 17 00:00:00 2001
+From: pferrao <pedro.ferrao@strypes.pt>
+Date: Thu, 26 May 2022 09:24:43 +0100
+Subject: [PATCH 03/12] cw-llc: support for kernel 5.15 netdev struct changes
+
+---
+ kernel/drivers/cohda/llc/llc-ipv6.c   | 11 +++++++++++
+ kernel/drivers/cohda/llc/llc-netdev.c | 11 +++++++++++
+ 2 files changed, 22 insertions(+)
+
+diff --git a/kernel/drivers/cohda/llc/llc-ipv6.c b/kernel/drivers/cohda/llc/llc-ipv6.c
+index 21db8c3..bbae3ea 100644
+--- a/kernel/drivers/cohda/llc/llc-ipv6.c
++++ b/kernel/drivers/cohda/llc/llc-ipv6.c
+@@ -721,9 +721,16 @@ Error:
+  * @return Zero for success, otherwise a negative errno
+  *
+  */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+ static int LLC_IPv6Ioctl(struct net_device *pNetDev,
+                          struct ifreq *pReq,
++                         void __user *data,
+                          int Cmd)
++#else
++static int LLC_IPv6Ioctl(struct net_device *pNetDev,
++                         struct ifreq *pReq,
++                         int Cmd)
++#endif
+ {
+   int Res = -ENOSYS;
+ 
+@@ -1588,7 +1595,11 @@ static const struct net_device_ops LLCIPv6Ops =
+   .ndo_stop = LLC_IPv6Close,
+   .ndo_set_config = LLC_IPv6Config,
+   .ndo_start_xmit = LLC_IPv6Xmit,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
++  .ndo_siocdevprivate = LLC_IPv6Ioctl,
++#else
+   .ndo_do_ioctl = LLC_IPv6Ioctl,
++#endif
+   .ndo_tx_timeout = LLC_IPv6TxTimeout,
+   .ndo_change_mtu = LLC_IPv6ChangeMtu,
+   .ndo_set_mac_address = LLC_IPv6Addr,
+diff --git a/kernel/drivers/cohda/llc/llc-netdev.c b/kernel/drivers/cohda/llc/llc-netdev.c
+index dbf7604..e09cfb6 100644
+--- a/kernel/drivers/cohda/llc/llc-netdev.c
++++ b/kernel/drivers/cohda/llc/llc-netdev.c
+@@ -304,9 +304,16 @@ static void LLC_NetDevTxTimeout (struct net_device *pNetDev)
+  * @return Zero on success or a negative errno
+  *
+  */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
+ static int LLC_NetDevIoctl (struct net_device *pNetDev,
+                             struct ifreq *pReq,
++                            void __user *data,
+                             int Cmd)
++#else
++static int LLC_NetDevIoctl (struct net_device *pNetDev,
++                            struct ifreq *pReq,
++                            int Cmd)
++#endif
+ {
+   int Res = -ENOSYS;
+   int IoctlCmd = Cmd;
+@@ -507,7 +514,11 @@ static const struct net_device_ops LLCNetDevOps =
+   .ndo_stop = LLC_NetDevClose,
+   .ndo_set_config = LLC_NetDevConfig,
+   .ndo_start_xmit = LLC_NetDevTx,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,15,0))
++  .ndo_siocdevprivate = LLC_NetDevIoctl,
++#else
+   .ndo_do_ioctl = LLC_NetDevIoctl,
++#endif
+   .ndo_tx_timeout = LLC_NetDevTxTimeout,
+   .ndo_change_mtu = LLC_NetDevChangeMTU,
+   .ndo_set_mac_address = LLC_NetDevSetMACAddr,
+-- 
+2.30.2
+
