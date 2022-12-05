@@ -146,7 +146,8 @@ for i in $COMPONENTS; do
 		if [[ -d ${ROOTDIR}/patches/$i ]]; then
 			for patch in "${ROOTDIR}/patches/$i"/*; do
 				echo "Applying $patch ..."
-				git am "$patch"
+				test -e .git && git am "$patch"
+				test -e .git || patch -p1 < $patch
 
 				if [ $? -ne 0 ]; then
 					echo "Warning: Failed to apply $patch!"
