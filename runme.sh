@@ -193,10 +193,19 @@ cp -v imx-seco-${SECO_RELEASE}/firmware/seco/mx8dxl${SOC_REVISION,,}-ahab-contai
 cp -v imx-seco-${SECO_RELEASE}/firmware/seco/mx8dxl${SOC_REVISION,,}-ahab-container.img "${ROOTDIR}/build/uboot/ahab-container.img"
 
 # Build SCFW
+case ${SOC_REVISION,,} in
+	b0)
+		# B0 currently has no specific SCU Firmware variant, reuse A0.
+		SCFW_R=A0
+	;;
+	*)
+		SCFW_R=${SOC_REVISION^^}
+	;;
+esac
 cd "${ROOTDIR}/build/scfw/scfw_export_mx8"
-make TOOLS="${ROOTDIR}/tools" R=${SOC_REVISION^^} B=evk D=0 M=0 dxl
-cp -v build_mx8dxl_${SOC_REVISION,,}/scfw_tcm.bin "${ROOTDIR}/build/uboot/mx8dxl-evk-scfw-tcm.bin"
-cp -v build_mx8dxl_${SOC_REVISION,,}/scfw_tcm.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
+make TOOLS="${ROOTDIR}/tools" R=${SCFW_R^^} B=evk D=0 M=0 dxl
+cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/build/uboot/mx8dxl-evk-scfw-tcm.bin"
+cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
 # Build ATF
 cd "${ROOTDIR}/build/atf"
