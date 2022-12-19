@@ -227,9 +227,11 @@ cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 echo "Finished compiling bootloader image."
 
 # Build Linux
+mkdir -p "${ROOTDIR}/build/linux-build"
 cd "${ROOTDIR}/build/linux"
-find "${ROOTDIR}/configs/linux" -type f | sort | xargs ./scripts/kconfig/merge_config.sh -m arch/arm64/configs/imx_v8_defconfig /dev/null
-make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" olddefconfig
+find "${ROOTDIR}/configs/linux" -type f | sort | xargs ./scripts/kconfig/merge_config.sh -O "${ROOTDIR}/build/linux-build" -m arch/arm64/configs/imx_v8_defconfig /dev/null
+make -C "${ROOTDIR}/build/linux" O="${ROOTDIR}/build/linux-build" ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" olddefconfig
+cd "${ROOTDIR}/build/linux-build"
 make -j$(nproc) ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" dtbs Image modules
 
 rm -rf "${ROOTDIR}/images/linux"
@@ -250,7 +252,7 @@ EOF
 if [[ -d ${ROOTDIR}/build/safsdio ]]; then
 	cd "${ROOTDIR}/build/safsdio"
 
-	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M="$PWD" modules
+	make -C "${ROOTDIR}/build/linux-build" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M="$PWD" modules
 	install -v -m644 -D saf_sdio.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/saf_sdio.ko"
 	install -v -m644 -D include/saf_sdio.h "${ROOTDIR}/images/linux/usr/include/linux/saf_sdio.h"
 fi
@@ -259,12 +261,12 @@ fi
 if [[ -d ${ROOTDIR}/build/llc ]]; then
 	cd "${ROOTDIR}/build/llc/kernel/drivers/cohda/llc"
 
-	make -C "${ROOTDIR}/build/linux" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM LLC_DEV_CNT=1 modules
+	make -C "${ROOTDIR}/build/linux-build" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM LLC_DEV_CNT=1 modules
 	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
 fi
 
 # regenerate modules dependencies
-depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux/System.map" ${KRELEASE}
+depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux-build/System.map" ${KRELEASE}
 
 # Generate a Debian rootfs
 mkdir -p "${ROOTDIR}/build/debian"
