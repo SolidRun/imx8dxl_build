@@ -1,0 +1,253 @@
+From f0f5813250fe55154ee9e5f595dd8c060a2e957c Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Tue, 20 Dec 2022 14:53:07 +0100
+Subject: [PATCH 2/2] Add support for SolidRun i.MX8DXL SOM
+
+---
+ v2xCrypto/pkgbldcfg/plf-srimx8dxl.mk      | 167 ++++++++++++++++++++++
+ v2xCrypto/pkgbldcfg/v2xglobalcnf.mk       |   1 +
+ v2xCrypto/v2xCryptoPal/Makefile           |   4 +
+ v2xCrypto/v2xCryptoPal/dal/src/posixDal.c |  26 ++++
+ 4 files changed, 198 insertions(+)
+ create mode 100644 v2xCrypto/pkgbldcfg/plf-srimx8dxl.mk
+
+diff --git a/v2xCrypto/pkgbldcfg/plf-srimx8dxl.mk b/v2xCrypto/pkgbldcfg/plf-srimx8dxl.mk
+new file mode 100644
+index 0000000..e8d6193
+--- /dev/null
++++ b/v2xCrypto/pkgbldcfg/plf-srimx8dxl.mk
+@@ -0,0 +1,167 @@
++# --------------------------------------------------------------------------------------------------------
++# !!! FILE Not to Edit !!!, Suggested to Use as it is ...
++# Platform "srimx8dxl" specific build configuration properties.
++# This file get choosed by V2xcrypto build sytem when V2XSE_CFG_BOARD=srimx8dxl.
++# Each property is defined with default values.
++# properties marked with "Can be overridden :: Yes" can be altered either via CLI or make/shell variable export method.
++# properties marked with "Can be overridden :: No" are fixed and can't be altered.
++# --------------------------------------------------------------------------------------------------------
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to cfg the Install path for build system
++# Details           :: Build system places the generated executables & libraries in this configured path
++# Property Type     :: Platform specific
++# Can be overridden :: Yes
++# Default value     :: $(V2XSE_HOST_SW_ROOT)/bin/srimx8dxl
++# Notes             :: Can be any valid path supported by the file system
++# --------------------------------------------------------------------------------------------------------
++V2XSE_CFG_INSTALL_PATH ?= $(V2XSE_HOST_SW_ROOT)/bin/srimx8dxl
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose OSAL layer for CryptoPal
++# Details           :: V2xcrypto depends on OSAL for timer related functionalities.
++#                      Implementation defined in "linuxOsal.c", gets compiled for "srimx8dxl" platform.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: linux
++# --------------------------------------------------------------------------------------------------------
++V2XSE_CFG_HOST_OS = linux
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose Device Abstraction Layer (DAL) for CryptoPal
++# Details           :: V2xcrypto depends on DAL for SPI & GPIO related functionalities.
++#                      Implementation defined in "posixDal.c", gets compiled for "srimx8dxl" platform.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: posix
++# --------------------------------------------------------------------------------------------------------
++V2XSE_CFG_DAL = posix
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose Crypto Interface functions for CryptoPal
++# Details           :: For "srimx8dxl" V2xcrypto depends on openssl for crypto related functionalities.
++#                      Implementation "opensslCryptoAl.c", gets compiled for "srimx8dxl" platform.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: openssl
++# Notes             :: For srimx8dxl, package tries to link with default openssl library installed in sysroot.
++#                      Make sure gcc toolchain flag "--sysroot=" is defined and points to valid system
++#                      library path (Normally part of delivered toolchain). A custom openssl
++#                      library can be selected by adding it to:
++#                      V2XSE_PLF_DEP_INC  - search path to resolve C-headers,
++#                      V2XSE_PLF_DEP_LIBS - absolute path of the library file name libcrypto.so(for shared object,
++#                      or libcrypto.a ( for static object ).
++# --------------------------------------------------------------------------------------------------------
++V2XSE_CFG_CRYPTOAL = openssl
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose openSSL version
++# Details           :: For "srimx8dxl" V2xcrypto depends on openssl version for crypto related functionalities.
++#                      Implementation in "opensslCryptoAl.c" corresponding to the openSSL version selected,
++#					   gets compiled for "srimx8dxl" platform.
++# Property Type     :: Platform specific
++# Can be overridden :: Yes
++# Default value     ::
++# Notes             :: This property has to be used only when "V2XSE_CFG_CRYPTOAL = openssl".
++#					   The following value can be used
++#						- "OPENSSL_1_1_0": To select implementation in opensslCryptoAl.c specific to
++#						   openSSL 1.1.0 version
++#						-  Any other value results in selection of implementation in opensslCryptoAl.c
++#						   specific to openSSL 1.0.2 version
++#
++#
++# --------------------------------------------------------------------------------------------------------
++
++V2XSE_CFG_OPENSSL_VER ?= OPENSSL_1_1_0
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose GCC compiler flags
++# Details           :: This property is global and common for all sub-components,
++#                      used during C-file compilation.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: Options to treat some of the warnings as an error are assumde below
++# Notes             :: Extra user defined compiler flags can be passed using property "EXT_GLOBAL_CFLAGS"
++#                      and it gets appended to this property.
++# --------------------------------------------------------------------------------------------------------
++GLOBAL_CFLAGS :=
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose GCC Archiver flags
++# Details           :: This property is global and common for all sub-components,
++#                      used when creating static libraries.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: none
++# Notes             :: Extra user defined Loader flags can be passed using property "EXT_GLOBAL_LDFLAGS"
++#                      and it gets appended to this property.
++# --------------------------------------------------------------------------------------------------------
++GLOBAL_LDFLAGS :=
++
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to choose GCC Linker flags
++# Details           :: This property is global and common for all sub-components,
++#                      used when creating executables and generating shared objects.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: none
++# Notes             :: Extra user defined Linker flags can be passed using property "EXT_GLOBAL_LNFLAGS"
++#                      and it gets appended to this property.
++# --------------------------------------------------------------------------------------------------------
++GLOBAL_LNFLAGS :=
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to populate platform specific dependent include directories
++# Details           :: This property is used for compiling the v2xCryptoPal library
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: V2XSE_PLF_DEP_INC
++# Notes             ::
++#
++# --------------------------------------------------------------------------------------------------------
++$(eval $(init_GLOBAL_PLF_DEP_INC))
++
++# --------------------------------------------------------------------------------------------------------
++# Brief             :: Property to populate platform specific dependent libs
++# Details           :: This property is global and common for all sub-components,
++#                      used when creating executables and generating shared objects.
++# Property Type     :: Platform specific
++# Can be overridden :: No
++# Default value     :: V2XSE_PLF_DEP_LIBS
++# Notes             ::
++#
++# --------------------------------------------------------------------------------------------------------
++$(eval $(init_GLOBAL_PLF_DEP_LIBS))
++
++ifeq ($(V2XSE_CFG_CRYPTOAL),openssl)
++  # If there is no openssl library specified externally, we try to
++  # find it in the default library locations
++  ifeq ($(findstring libcrypto,$(GLOBAL_PLF_DEP_LIBS)),)
++    GLOBAL_PLF_DEP_LIBS += -lcrypto
++  endif
++endif
++
++GLOBAL_PLF_DEP_LIBS += -ldl -lrt -lpthread
++
++# --------------------------------------------------------------------------------------------------------
++# "srimx8dxl" platform specific default GCC compiler flags are populated here.
++# --------------------------------------------------------------------------------------------------------
++GLOBAL_CFLAGS += -Wall -Werror
++
++ifeq ($(V2XSE_CFG_BLD),debug)
++GLOBAL_CFLAGS += -g
++endif
++
++GLOBAL_CFLAGS += -Wsign-compare -Wextra -Wno-unused-parameter -Wmaybe-uninitialized -std=gnu99 -D__USE_BSD
++GLOBAL_CFLAGS += -Wswitch-default -Wno-declaration-after-statement -Wfloat-equal -Wshadow -Wundef -Wextra
++GLOBAL_CFLAGS += -Wno-missing-field-initializers
++
++GLOBAL_CFLAGS += -DDEBUG_LEVEL=$(DLEVEL)
++GLOBAL_CFLAGS += -DDEBUG_MODULE=$(DMODULE)
+diff --git a/v2xCrypto/pkgbldcfg/v2xglobalcnf.mk b/v2xCrypto/pkgbldcfg/v2xglobalcnf.mk
+index 1950b0d..bd7134f 100644
+--- a/v2xCrypto/pkgbldcfg/v2xglobalcnf.mk
++++ b/v2xCrypto/pkgbldcfg/v2xglobalcnf.mk
+@@ -38,6 +38,7 @@ GLOBAL_SYS_EXECU_ENV ?= none
+ #                      4. evk2qnx - RoadLink Evaluation Board version 2 with QNX OS 
+ #                      5. imx8mek - IMX8 based Evaluation Board 
+ #                      6. evk2 - RoadLink Evaluation Board version 2 with Linux 
++#                      7. srimx8dxl - SolidRun IMX8DXL SOM 
+ # --------------------------------------------------------------------------------------------------------
+ V2XSE_CFG_BOARD ?= mk5
+ 
+diff --git a/v2xCrypto/v2xCryptoPal/Makefile b/v2xCrypto/v2xCryptoPal/Makefile
+index 3f6236a..2b218c5 100644
+--- a/v2xCrypto/v2xCryptoPal/Makefile
++++ b/v2xCrypto/v2xCryptoPal/Makefile
+@@ -103,6 +103,10 @@ ifeq ($(V2XSE_CFG_BOARD), t1compevk2)
+ LOCAL_CFLAGS += -DENABLE_DAL_CFG_EVK2
+ endif
+ 
++ifeq ($(V2XSE_CFG_BOARD), srimx8dxl)
++LOCAL_CFLAGS += -DENABLE_DAL_CFG_SRIMX8DXL
++endif
++
+ ifneq ($(V2XSE_CFG_OPENSSL_VER),)
+ 	LOCAL_CFLAGS += -DV2XSE_CFG_$(V2XSE_CFG_OPENSSL_VER)
+ endif 
+diff --git a/v2xCrypto/v2xCryptoPal/dal/src/posixDal.c b/v2xCrypto/v2xCryptoPal/dal/src/posixDal.c
+index 5a71a20..98df7c7 100644
+--- a/v2xCrypto/v2xCryptoPal/dal/src/posixDal.c
++++ b/v2xCrypto/v2xCryptoPal/dal/src/posixDal.c
+@@ -185,6 +185,32 @@
+ #define DAL_CFG_SERDY_GPIO              (496U)     // i.MX8 pad SPI3_CS0, GPIO0_IO16
+ 
+ 
++#elif defined( ENABLE_DAL_CFG_SRIMX8DXL )
++
++#define DAL_CFG_SYSFS_GPIO_DIR          "/sys/class/gpio"
++
++/* First "spidev" device in Linux provides access to SXF1800 */
++#define DAL_CFG_SPI_DEVICE              "/dev/spidev1.0"
++
++/*DAL_CFG_SPI_SPEED_IN_HZ: the SPI clock frequency. This should not exceed the capabilities of the application
++  processor and Secure Element as specified in the datasheets. Ensure that the setup and hold times of both sides
++  are satisfied. Also take additional delays caused by the board design into account.*/
++#define DAL_CFG_SPI_SPEED_IN_HZ         5000000 /* i.MX8DXL max. 166MHz@1.8V SDR; TODO: which is maximum of SXF1800? */
++
++/*DAL_CFG_SPI_DAV_GPIO: should be set to the GPIO pin number which is connected to the DAV (GPO1) pin of the Secure Element.
++  Enabling the use of the DAV and SE_RDY lines is controlled via a build diversity flag, refer V2X Crypto library user manual for details.*/
++#define DAL_CFG_SPI_DAV_GPIO            (3*32+21U)     /* IMX8DXL_QSPI0B_DATA3_LSIO_GPIO3_IO21 */
++
++/*DAL_CFG_SE_RESET_GPIO: should be set to the GPIO pin number which is connected to the RSTN pin of the Secure Element.*/
++#define DAL_CFG_SE_RESET_GPIO           (3*32+19U)     /* IMX8DXL_QSPI0B_DATA1_LSIO_GPIO3_IO19 */
++
++/* DAL_CFG_SE_SWITCH_GPIO: gpio for voltage regulator powering sxf1800 */
++#define DAL_CFG_SE_SWITCH_GPIO          (3*32+18U)       /* IMX8DXL_QSPI0B_DATA0_LSIO_GPIO3_IO18 */
++
++/*DAL_CFG_SERDY_GPIO: should be set to the GPIO pin number which is connected to the SE_RDY (GPIO0) pin of the Secure Element.*/
++#define DAL_CFG_SERDY_GPIO              (3*32+20U)     /* IMX8DXL_QSPI0B_DATA2_LSIO_GPIO3_IO20 */
++
++
+ #else
+ 
+ #error "Unknown Board DAL Cfg"
+-- 
+2.39.0
+

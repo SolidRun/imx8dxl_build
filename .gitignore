@@ -4,3 +4,6 @@
 /V2XSW
 /overlay
 imx-scfw-porting-kit-*
+
+# SXF1800 source files
+SXF1800_REL_*.zip

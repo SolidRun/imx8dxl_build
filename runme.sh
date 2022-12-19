@@ -23,12 +23,14 @@ SAFSDIO_FILE=saf-sdio_RFP1.0.4.tgz
 SAFSDIO_FILE_URI="Roadlink BSP v0.15"
 LLC_FILE=llc_RFP2.5.tgz
 LLC_FILE_URI="Roadlink BSP v0.15"
+SXF1800_FILE=SXF1800_REL_RFP8.1.2.zip
+SXF1800_FILE_URI="SXF1800 RFP 8.1.2"
 
 ###
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw linux safsdio llc"
+COMPONENTS="atf uboot mkimage seco scfw linux safsdio llc sxf1800"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
@@ -84,6 +86,16 @@ for i in $COMPONENTS; do
 
 					if [[ $i == safsdio ]]; then
 						mv "${ROOTDIR}/build/saf-sdio" "${ROOTDIR}/build/safsdio"
+					fi
+				elif [[ ${!FILE_VAR} =~ \.zip$ ]]; then
+					unzip -q -o -d "${ROOTDIR}/build" "${ROOTDIR}/${!FILE_VAR}"
+
+					if [ $? -ne 0 ]; then
+						echo "Error: Failed to unzip \"${!FILE_VAR}\"!"
+					fi
+
+					if [[ $i == sxf1800 ]]; then
+						mv "${ROOTDIR}/build/${SXF1800_FILE%.zip}" "${ROOTDIR}/build/sxf1800"
 					fi
 				else
 					mkdir "${ROOTDIR}/build/$i"
@@ -263,6 +275,25 @@ if [[ -d ${ROOTDIR}/build/llc ]]; then
 
 	make -C "${ROOTDIR}/build/linux-build" CROSS_COMPILE="$CROSS_COMPILE" ARCH=arm64 M=$PWD BOARD=SRIMX8DXLSOM LLC_DEV_CNT=1 modules
 	install -v -m644 -D cw-llc.ko "${ROOTDIR}/images/linux/usr/lib/modules/${KRELEASE}/kernel/v2x/cw-llc.ko"
+fi
+
+# Build SXF1800 library and tools
+if [[ -d ${ROOTDIR}/build/sxf1800 ]]; then
+	cd "${ROOTDIR}/build/sxf1800"
+
+	export V2XSE_CFG_BOARD=srimx8dxl
+	export V2XSE_CFG_BLD=retail
+	export EXT_GLOBAL_CFLAGS="-DCONFIG_SPI_DAV=1 -DCONFIG_SERDY_EVT=1 -DCONFIG_POWER_CYCLE=0"
+	export V2XSE_CFG_BLD_LIB=shared
+
+	dpkg --add-architecture arm64 && apt update
+	apt -y install libssl-dev:arm64
+
+	make -C "${ROOTDIR}/build/sxf1800/v2xCrypto" CC="${CROSS_COMPILE}gcc" v2xlibs
+	make -C "${ROOTDIR}/build/sxf1800/v2xCrypto" CC="${CROSS_COMPILE}gcc" INSTALLDIR=${ROOTDIR}/images/linux install
+
+	make -C "${ROOTDIR}/build/sxf1800/cliUtilities" CC="${CROSS_COMPILE}gcc" all
+	make -C "${ROOTDIR}/build/sxf1800/cliUtilities" CC="${CROSS_COMPILE}gcc" INSTALLDIR=${ROOTDIR}/images/linux install
 fi
 
 # regenerate modules dependencies

@@ -1,0 +1,80 @@
+From d9a5b768e81dd82046ac3088b49e5f6681e2dd48 Mon Sep 17 00:00:00 2001
+From: Jannik Beyerstedt <beyerstedt@consider-it.de>
+Date: Mon, 19 Dec 2022 16:17:11 +0100
+Subject: [PATCH 1/2] Add install target to makefiles
+
+---
+ cliUtilities/Makefile | 13 +++++++++++++
+ v2xCrypto/Makefile    | 20 ++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
+
+diff --git a/cliUtilities/Makefile b/cliUtilities/Makefile
+index 0fb4d5d..4db67d2 100644
+--- a/cliUtilities/Makefile
++++ b/cliUtilities/Makefile
+@@ -1,5 +1,7 @@
+ DATE := $(shell date +"%Y-%m-%d")
+ 
++INSTALLDIR ?=
++
+ # V2XSE Utils Root
+ export V2XSE_TOOLS_ROOT=$(CURDIR)
+ # V2XSE Workspace Root (directory name in release package differs from internal development path)
+@@ -82,6 +84,17 @@ clean:
+ 	cd sanity_app && $(MAKE) clean
+ 	cd key_injection && $(MAKE) clean
+ 
++## install			: Install to system (use INSTALLDIR for alternate root)
++install: all
++	install -d $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-se-info           $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-key-update        $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-sanity-app        $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-jcop-update       $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-key-injection     $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-applet-upgrade    $(INSTALLDIR)/usr/bin/sxf1800/
++	install -Dm 755 $(V2XSE_CFG_INSTALL_PATH)/v2xse-jcop-config-power $(INSTALLDIR)/usr/bin/sxf1800/
++
+ .PHONY : help
+ help : Makefile
+ 	@sed -n 's/^##//p' $<
+diff --git a/v2xCrypto/Makefile b/v2xCrypto/Makefile
+index 5c5fd5a..e095f3b 100644
+--- a/v2xCrypto/Makefile
++++ b/v2xCrypto/Makefile
+@@ -1,5 +1,7 @@
+ DATE := $(shell date +"%Y-%m-%d")
+ 
++INSTALLDIR ?=
++
+ # V2XSE Workspace Root
+ export V2XSE_HOST_SW_ROOT = $(CURDIR)
+ # V2XSE Build Cfg Files Root
+@@ -64,6 +66,24 @@ endif
+ 
+ include $(V2X_BLDSYS_HOME)/misc-com.mk
+ 
++## install			: Install to system (use INSTALLDIR for alternate root)
++install: v2xlibs
++	install -d $(INSTALLDIR)/usr/lib/firmware/sxf1800
++	cp -r ../firmware/jcop/* $(INSTALLDIR)/usr/lib/firmware/sxf1800/
++
++	install -d $(INSTALLDIR)/usr/lib/
++	cp -Pv $(V2XSE_CFG_INSTALL_PATH)/lib* $(INSTALLDIR)/usr/lib/
++
++	install -d $(INSTALLDIR)/usr/include/
++	install -Dm 644 v2xCrypto/v2xSe/inc/*.h $(INSTALLDIR)/usr/include/
++
++	install -d $(INSTALLDIR)/usr/bin/sxf1800/
++	install -d $(INSTALLDIR)/usr/bin/sxf1800/NCK/
++	install -d $(INSTALLDIR)/usr/bin/sxf1800/NKS/
++	install -Dm 755 ../secureElement/defaultScpKeys_NKS/v2xscppalutil.bin  $(INSTALLDIR)/usr/bin/sxf1800/NKS/
++	install -Dm 755 ../secureElement/defaultScpKeys_NCK/v2xscppalutil.bin  $(INSTALLDIR)/usr/bin/sxf1800/NCK/
++	install -Dm 644 ../firmware/v2xApplet/v2xApplet_2.12.3_NCK.apdu        $(INSTALLDIR)/usr/bin/sxf1800/NCK/
++
+ .PHONY : help
+ help : Makefile
+ 	@sed -n 's/^##//p' $<
+-- 
+2.39.0
+
