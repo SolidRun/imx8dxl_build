@@ -350,8 +350,9 @@ fi;
 # Prepare final rootfs
 cp rootfs.e2.orig rootfs.e2
 
-# Add kernel to rootfs
-find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+# Add kernel and cross-compiled tools to rootfs
+find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+find "${ROOTDIR}/images/linux" -type l -printf "%P\n" | e2cp -G 0 -O 0 -p -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
 # Add overlay to rootfs
 find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
