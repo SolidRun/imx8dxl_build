@@ -238,6 +238,8 @@ rm -rf "${ROOTDIR}/images/linux"
 mkdir -p "${ROOTDIR}/images/linux/boot/extlinux"
 cp -v arch/arm64/boot/dts/freescale/imx8dxl*.dtb "${ROOTDIR}/images/linux/boot/"
 cp -v arch/arm64/boot/Image "${ROOTDIR}/images/linux/boot/"
+cp -v System.map "${ROOTDIR}/images/linux/boot/"
+cp -v .config "${ROOTDIR}/images/linux/boot/config"
 make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" INSTALL_MOD_PATH="${ROOTDIR}/images/linux/usr" modules_install
 KRELEASE=`make kernelrelease`
 
@@ -247,6 +249,23 @@ label linux
 	fdtdir ..
 	append root=/dev/mmcblk0p1 ro rootwait
 EOF
+
+# Build external Linux Headers package for compiling modules
+cd "${ROOTDIR}/build/linux"
+rm -rf "${ROOTDIR}/images/linux-headers"
+mkdir -p ${ROOTDIR}/images/linux-headers
+tempfile=$(mktemp)
+find . -name Makefile\* -o -name Kconfig\* -o -name \*.pl > $tempfile
+find arch/arm64/include include scripts -type f >> $tempfile
+tar -c -f - -T $tempfile | tar -C "${ROOTDIR}/images/linux-headers" -xf -
+cd "${ROOTDIR}/build/linux-build"
+find arch/arm64/include .config Module.symvers include scripts -type f > $tempfile
+tar -c -f - -T $tempfile | tar -C "${ROOTDIR}/images/linux-headers" -xf -
+rm -f $tmpfile
+unset tempfile
+cd "${ROOTDIR}/images/linux-headers"
+tar cpf "${ROOTDIR}/images/linux-headers.tar" *
+
 
 # Build SAF5x00 SDIO Driver
 if [[ -d ${ROOTDIR}/build/safsdio ]]; then
