@@ -1,2 +1,5 @@
 # assign gnss devices to dialout group
 SUBSYSTEM=="gnss", GROUP="dialout"
+
+# restart chrony as pps device changes
+SUBSYSTEM=="pps", KERNEL=="pps0", RUN+="/usr/bin/systemctl --no-block reload chrony.service"
