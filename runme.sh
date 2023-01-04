@@ -324,6 +324,9 @@ passwd -d root
 apt-file update
 update-command-not-found
 
+# enable optional system services
+systemctl enable gpsd
+
 # populate fstab
 printf "/dev/root / ext4 defaults 0 1\\n" > /etc/fstab
 
