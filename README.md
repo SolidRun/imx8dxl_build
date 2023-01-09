@@ -1,203 +1,17 @@
 # SolidRun's i.MX8DXL V2X SoM build scripts
 
 ## Introduction
-Main intention of this repository is to produce a Debian based build environment for i.MX8DXL product evaluation.
 
-The build script provides ready to use images that can be deployed on eMMC or booted via USB-OTG.
-
-## Build with Docker
-A docker image providing a consistent build environment can be used as below:
-
-1. build container image (first time only)
-   ```
-   docker build -t imx8dxl_build docker
-   # optional with an apt proxy, e.g. apt-cacher-ng
-   # docker build --build-arg APTPROXY=http://127.0.0.1:3142 -t imx8mm_build docker
-   ```
-2. Download "SCFW Porting Kit​ 1.13.0" for Linux 5.15.32_2.0.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
-3. invoke build script in working directory
-   ```
-   docker run -i -t -v "$PWD":/work imx8dxl_build -u $(id -u) -g $(id -g)
-   ```
-
-### rootless Podman
-
-Due to the way podman performs user-id mapping, the root user inside the container (uid=0, gid=0) will be mapped to the user running podman (e.g. 1000:100).
-Therefore in order for the build directory to be owned by current user, `-u 0 -g 0` have to be passed to *docker run*.
-
-## Build with host tools
-Simply running ./runme.sh, it will check for required tools, clone and build images and place results in images/ directory.
-
-## Configure Boot Mode DIP Switch
-
-This table indicates valid boot-modes selectable via the DIP switch S1 on the Molex Carrier.
-The value 0 indicates OFF, and 1 indicates the ON state.
-
-| Switch             | 1 | 2 |
-|--------------------|---|---|
-| selected by eFuses | 0 | 0 |
-| eMMC               | 0 | 1 |
-| USB-OTG            | 1 | 0 |
-
-## Boot via USB-OTG
-
-All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
-
-### U-Boot only
-
-0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
-1. Connect the serial console to the computer, and open it.
-2. Connect the first USB-OTG port via a type A to type A cable to the computer.
-3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
-4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to send U-Boot:
-   `[path-to-]uuu images/uboot.bin`
-5. Connect to power, or reset the device.
-6. The serial console should now provide access to the early boot log, and u-boot commandline:
-
-       U-Boot 2021.04-00001-g6f4a2fe897 (Jul 24 2022 - 11:18:25 +0000)
-
-       CPU:   NXP i.MX8DXL RevA1 A35 at 1200 MHz at 37C
-
-       Model: NXP i.MX8DXL EVK Board
-       Board: iMX8DXL EVK
-       Boot:  USB
-       DRAM:  1019.8 MiB
-       MMC:   FSL_SDHC: 0, FSL_SDHC: 1
-       Loading Environment from MMC... MMC: no card present
-       *** Warning - No block device, using default environment
-
-       In:    serial
-       Out:   serial
-       Err:   serial
-
-        BuildInfo:
-         - SCFW c1e35e09, SECO-FW b3c3cbc7, IMX-MKIMAGE 22346a32, ATF 05f788b
-         - U-Boot 2021.04-00001-g6f4a2fe897
-         - V2X-FW 2c8f793d version 0.0.4
-
-       MMC: no card present
-       Detect USB boot. Will enter fastboot mode!
-       Net:   pca953x gpio@20: Error reading direction register
-
-       Warning: ethernet@5b050000 (eth1) using random MAC address - ca:ef:1c:f5:5c:db
-       eth1: ethernet@5b050000 [PRIME]
-       Fastboot: Normal
-       Boot from USB for mfgtools
-       *** Warning - Use default environment for                                mfgtools
-       , using default environment
-
-       Run bootcmd_mfg: run mfgtool_args;if iminfo ${initrd_addr}; then if test ${tee} = yes; then bootm ${tee_addr} ${initrd_addr} ${fdt_addr}; else booti ${loadaddr} ${initrd_addr} ${fdt_addr}; fi; else echo "Run fastboot ..."; fastboot auto; fi;
-       Hit any key to stop autoboot:  0
-
-       ## Checking Image at 83100000 ...
-       Unknown image format!
-       Run fastboot ...
-       auto usb 0
-
-   The last line indicates that the bootloader is waiting for further USB commands via the fastboot protocol. By pressing Ctrl+C the U-Boot commandline can be accessed instead.
-
-### Flash U-Boot and Disk Image to eMMC
-
-All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
-
-0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC for the first time*
-1. Connect the serial console to the computer, and open it.
-2. Connect the first USB-OTG port via a type A to type A cable to the computer.
-3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
-4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the flash-emmc.uuu script, to write `images/emmc.img` and `images/uboot.bin` to the eMMC:
-   `[path-to-]uuu flash-emmc.uuu`
-5. Connect to power, or reset the device.
-6. The serial console should now provide access to the early boot log, and indicate writing to the eMMC:
-
-       Run fastboot ...
-       auto usb 0
-       Detect USB boot. Will enter fastboot mode!
-       flash target is MMC:1
-       MMC: no card present
-       MMC card init failed!
-       MMC: no card present
-       ** Block device MMC 1 not supported
-       Detect USB boot. Will enter fastboot mode!
-       flash target is MMC:0
-       switch to partitions #0, OK
-       mmc0(part 0) is current device
-       Detect USB boot. Will enter fastboot mode!
-       Starting download of 16776232 bytes
-       ..........................................................................
-       .....................................................
-       downloading of 16776232 bytes finished
-       writing to partition 'all'
-       sparse flash target is mmc:0
-       writing to partition 'all' for sparse, buffer size 16776232
-       Flashing sparse image at offset 0
-       Flashing Sparse Image
-       ........ wrote 16776192 bytes to 'all'
-
-       ...
-
-7. Once the `uuu` command indicates "done", the flashing is complete.
-
-### Boot Linux without flashing
-
-This section is useful for development or testing only, when explicitly trying to avoid flashing the eMMC. If you intend to evaluate the device or software, please instead flash the build results to eMMC.
-
-0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
-1. Connect the serial console to the computer, and open it.
-2. Connect the first USB-OTG port via a type A to type A cable to the computer.
-3. Customise `boot.uuu` at the root of imx8dxl_build folder with a text editor, to choose specific kernel, device-tree and initrd paths. By default kernel and device-tree are taken from the last build while initrd should be created by the user at `images/initrd`.
-4. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
-5. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to send u-boot, kernel and initramfs:
-   `[path-to-]uuu boot.uuu`
-6. Connect to power, or reset the device.
-7. The serial console should now provide access to the early boot log, showing progress of loading the system to RAM till eventually Linux is started:
-
-          U-Boot 2022.04-00004-gc20edd9a31-dirty (Nov 17 2022 - 13:25:39 +0000)
-
-       CPU:   NXP i.MX8DXL RevA1 A35 at 1200 MHz at 56C
-
-       Model: SolidRun i.MX8DXL SoM
-       Board: SolidRun i.MX8DXL SoM
-       Boot:  USB
-       DRAM:  1019.8 MiB
-       Core:  148 devices, 18 uclasses, devicetree: separate
-       MMC:   FSL_SDHC: 0
-       Loading Environment from MMC... OK
-       In:    serial
-       Out:   serial
-       Err:   serial
-
-        BuildInfo:
-         - SCFW 8172eaea, SECO-FW b3c3cbc7, IMX-MKIMAGE a8bb8edb, ATF c6a19b1
-         - U-Boot 2022.04-00004-gc20edd9a31-dirty
-         - V2X-FW 2c8f793d version 0.0.4
-
-       Detect USB boot. Will enter fastboot mode!
-       Net:
-       Warning: ethernet@5b050000 (eth1) using random MAC address - d2:a6:e2:e1:9d:8a
-       eth1: ethernet@5b050000 [PRIME]
-       Fastboot: Normal
-       Boot from USB for uuu
-       Hit any key to stop autoboot:  0
-       Failed to configure default pinctrl
-       warning: id pin does not indicate gadget mode, enabling regardless.
-       Detect USB boot. Will enter fastboot mode!
-       Detect USB boot. Will enter fastboot mode!
-       Detect USB boot. Will enter fastboot mode!
-       Detect USB boot. Will enter fastboot mode!
-       Starting download of 30925312 bytes
-       ...
-       ## Flattened Device Tree blob at 80700000
-          Booting using the fdt blob at 0x80700000
-          Using Device Tree in place at 0000000080700000, end 0000000080710b2d
-
-       Starting kernel ...
-
-       [    0.000000] Booting Linux on physical CPU 0x0000000000 [0x410fd042]
-       ...
-
-   The last line indicates that Linux has been started.
+Main intention of this repository is to produce a Debian based reference system for i.MX8DXL product evaluation.
+Automatic binary releases are available on [https://images.solid-run.com/IMX8/imx8dxl_build](our website) for download.
 
 ## Get Started
+
+Early preview SoMs were shipped with U-Boot and Debian preinstalled to eMMC.
+Production versions are expected to ship at least with U-Boot preinstalled to boot0.
+
+If no operating system was installed, please download the latest binary release from [https://images.solid-run.com/IMX8/imx8dxl_build](our website).
+Then follow the steps in section "Flash Disk Image to eMMC".
 
 After flashing the eMMC and booting into Linux, the serial console must be used for logging into the root account for the first time.
 Simply enter "root" and press return:
@@ -426,3 +240,212 @@ To achieve link up between two devices, both sides must be explicitly configured
 
     ethtool -s trx6 master-slave forced-slave
     ethtool -s trx6 master-slave forced-master
+
+## Configure Boot Mode DIP Switch
+
+This table indicates valid boot-modes selectable via the DIP switch S1 on the Molex Carrier.
+The value 0 indicates OFF, and 1 indicates the ON state.
+
+| Switch             | 1 | 2 |
+|--------------------|---|---|
+| selected by eFuses | 0 | 0 |
+| eMMC               | 0 | 1 |
+| USB-OTG            | 1 | 0 |
+
+## Boot via USB-OTG
+
+All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
+
+### Flash Disk Image to eMMC
+
+0. Configure the DIP Switch to boot from eMMC.
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Connect to power, or reset the device.
+4. The serial console should now provide access to the early boot log. Interrupt it at the timeout prompt for access to U-Boot Shell:
+
+       Hit any key to stop autoboot:  3
+
+6. Activate USB mass storage emulation for eMMC data partition:
+
+       => ums mmc 0
+
+7. The computer should recognise a new USB drive. Flash the disk image using your tool of choice, e.g. [https://www.balena.io/etcher/](etcher.io).
+8. On the U-Boot console, cancel usb mass storage emulation by pressing ctrl+c, then reboot or reset the device.
+
+### Flash only U-Boot to eMMC
+
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to send U-Boot:
+   `[path-to-]uuu images/uboot.bin`
+5. Connect to power, or reset the device.
+6. The serial console should now provide access to the early boot log, and u-boot commandline:
+
+       U-Boot 2021.04-00001-g6f4a2fe897 (Jul 24 2022 - 11:18:25 +0000)
+
+       CPU:   NXP i.MX8DXL RevA1 A35 at 1200 MHz at 37C
+
+       Model: NXP i.MX8DXL EVK Board
+       Board: iMX8DXL EVK
+       Boot:  USB
+       DRAM:  1019.8 MiB
+       MMC:   FSL_SDHC: 0, FSL_SDHC: 1
+       Loading Environment from MMC... MMC: no card present
+       *** Warning - No block device, using default environment
+
+       In:    serial
+       Out:   serial
+       Err:   serial
+
+        BuildInfo:
+         - SCFW c1e35e09, SECO-FW b3c3cbc7, IMX-MKIMAGE 22346a32, ATF 05f788b
+         - U-Boot 2021.04-00001-g6f4a2fe897
+         - V2X-FW 2c8f793d version 0.0.4
+
+       MMC: no card present
+       Detect USB boot. Will enter fastboot mode!
+       Net:   pca953x gpio@20: Error reading direction register
+
+       Warning: ethernet@5b050000 (eth1) using random MAC address - ca:ef:1c:f5:5c:db
+       eth1: ethernet@5b050000 [PRIME]
+       Fastboot: Normal
+       Boot from USB for mfgtools
+       *** Warning - Use default environment for                                mfgtools
+       , using default environment
+
+       Run bootcmd_mfg: run mfgtool_args;if iminfo ${initrd_addr}; then if test ${tee} = yes; then bootm ${tee_addr} ${initrd_addr} ${fdt_addr}; else booti ${loadaddr} ${initrd_addr} ${fdt_addr}; fi; else echo "Run fastboot ..."; fastboot auto; fi;
+       Hit any key to stop autoboot:  0
+
+       ## Checking Image at 83100000 ...
+       Unknown image format!
+       Run fastboot ...
+       auto usb 0
+
+   The last line indicates that the bootloader is waiting for further USB commands via the fastboot protocol. By pressing Ctrl+C the U-Boot commandline can be accessed instead.
+
+### Flash U-Boot and Disk Image to eMMC
+
+All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
+
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC for the first time*
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the flash-emmc.uuu script, to write `images/emmc.img` and `images/uboot.bin` to the eMMC:
+   `[path-to-]uuu flash-emmc.uuu`
+5. Connect to power, or reset the device.
+6. The serial console should now provide access to the early boot log, and indicate writing to the eMMC:
+
+       Run fastboot ...
+       auto usb 0
+       Detect USB boot. Will enter fastboot mode!
+       flash target is MMC:1
+       MMC: no card present
+       MMC card init failed!
+       MMC: no card present
+       ** Block device MMC 1 not supported
+       Detect USB boot. Will enter fastboot mode!
+       flash target is MMC:0
+       switch to partitions #0, OK
+       mmc0(part 0) is current device
+       Detect USB boot. Will enter fastboot mode!
+       Starting download of 16776232 bytes
+       ..........................................................................
+       .....................................................
+       downloading of 16776232 bytes finished
+       writing to partition 'all'
+       sparse flash target is mmc:0
+       writing to partition 'all' for sparse, buffer size 16776232
+       Flashing sparse image at offset 0
+       Flashing Sparse Image
+       ........ wrote 16776192 bytes to 'all'
+
+       ...
+
+7. Once the `uuu` command indicates "done", the flashing is complete.
+
+### Boot Linux without flashing
+
+This section is useful for development or testing only, when explicitly trying to avoid flashing the eMMC. If you intend to evaluate the device or software, please instead flash the build results to eMMC.
+
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Customise `boot.uuu` at the root of imx8dxl_build folder with a text editor, to choose specific kernel, device-tree and initrd paths. By default kernel and device-tree are taken from the last build while initrd should be created by the user at `images/initrd`.
+4. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+5. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to send u-boot, kernel and initramfs:
+   `[path-to-]uuu boot.uuu`
+6. Connect to power, or reset the device.
+7. The serial console should now provide access to the early boot log, showing progress of loading the system to RAM till eventually Linux is started:
+
+          U-Boot 2022.04-00004-gc20edd9a31-dirty (Nov 17 2022 - 13:25:39 +0000)
+
+       CPU:   NXP i.MX8DXL RevA1 A35 at 1200 MHz at 56C
+
+       Model: SolidRun i.MX8DXL SoM
+       Board: SolidRun i.MX8DXL SoM
+       Boot:  USB
+       DRAM:  1019.8 MiB
+       Core:  148 devices, 18 uclasses, devicetree: separate
+       MMC:   FSL_SDHC: 0
+       Loading Environment from MMC... OK
+       In:    serial
+       Out:   serial
+       Err:   serial
+
+        BuildInfo:
+         - SCFW 8172eaea, SECO-FW b3c3cbc7, IMX-MKIMAGE a8bb8edb, ATF c6a19b1
+         - U-Boot 2022.04-00004-gc20edd9a31-dirty
+         - V2X-FW 2c8f793d version 0.0.4
+
+       Detect USB boot. Will enter fastboot mode!
+       Net:
+       Warning: ethernet@5b050000 (eth1) using random MAC address - d2:a6:e2:e1:9d:8a
+       eth1: ethernet@5b050000 [PRIME]
+       Fastboot: Normal
+       Boot from USB for uuu
+       Hit any key to stop autoboot:  0
+       Failed to configure default pinctrl
+       warning: id pin does not indicate gadget mode, enabling regardless.
+       Detect USB boot. Will enter fastboot mode!
+       Detect USB boot. Will enter fastboot mode!
+       Detect USB boot. Will enter fastboot mode!
+       Detect USB boot. Will enter fastboot mode!
+       Starting download of 30925312 bytes
+       ...
+       ## Flattened Device Tree blob at 80700000
+          Booting using the fdt blob at 0x80700000
+          Using Device Tree in place at 0000000080700000, end 0000000080710b2d
+
+       Starting kernel ...
+
+       [    0.000000] Booting Linux on physical CPU 0x0000000000 [0x410fd042]
+       ...
+
+   The last line indicates that Linux has been started.
+
+## Build with Docker
+A docker image providing a consistent build environment can be used as below:
+
+1. build container image (first time only)
+   ```
+   docker build -t imx8dxl_build docker
+   # optional with an apt proxy, e.g. apt-cacher-ng
+   # docker build --build-arg APTPROXY=http://127.0.0.1:3142 -t imx8mm_build docker
+   ```
+2. Download "SCFW Porting Kit​ 1.13.0" for Linux 5.15.32_2.0.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
+3. invoke build script in working directory
+   ```
+   docker run -i -t -v "$PWD":/work imx8dxl_build -u $(id -u) -g $(id -g)
+   ```
+
+### rootless Podman
+
+Due to the way podman performs user-id mapping, the root user inside the container (uid=0, gid=0) will be mapped to the user running podman (e.g. 1000:100).
+Therefore in order for the build directory to be owned by current user, `-u 0 -g 0` have to be passed to *docker run*.
+
+## Build with host tools
+Simply running ./runme.sh, it will check for required tools, clone and build images and place results in images/ directory.
