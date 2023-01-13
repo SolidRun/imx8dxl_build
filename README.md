@@ -439,7 +439,7 @@ A docker image providing a consistent build environment can be used as below:
 2. Download "SCFW Porting Kit​ 1.13.0" for Linux 5.15.32_2.0.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
 3. invoke build script in working directory
    ```
-   docker run -i -t -v "$PWD":/work imx8dxl_build -u $(id -u) -g $(id -g)
+   docker run --rm -i -t -v "$PWD":/work imx8dxl_build -u $(id -u) -g $(id -g)
    ```
 
 ### rootless Podman
