@@ -375,6 +375,10 @@ cp rootfs.e2.orig rootfs.e2
 # Add kernel to rootfs
 find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
+# package kernel individually
+rm -f "${ROOTDIR}/images/linux/linux.tar*"
+cd "${ROOTDIR}/images/linux"; tar -c --owner=root:0 -f "${ROOTDIR}/images/linux.tar" *; cd "${ROOTDIR}"
+
 # Add overlay to rootfs
 find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
