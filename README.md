@@ -3,14 +3,14 @@
 ## Introduction
 
 Main intention of this repository is to produce a Debian based reference system for i.MX8DXL product evaluation.
-Automatic binary releases are available on [https://images.solid-run.com/IMX8/imx8dxl_build](our website) for download.
+Automatic binary releases are available on [our website](https://images.solid-run.com/IMX8/imx8dxl_build) for download.
 
 ## Get Started
 
 Early preview SoMs were shipped with U-Boot and Debian preinstalled to eMMC.
 Production versions are expected to ship at least with U-Boot preinstalled to boot0.
 
-If no operating system was installed, please download the latest binary release from [https://images.solid-run.com/IMX8/imx8dxl_build](our website).
+If no operating system was installed, please download the latest binary release from [our website](https://images.solid-run.com/IMX8/imx8dxl_build).
 Then follow the steps in section "Flash Disk Image to eMMC".
 
 After flashing the eMMC and booting into Linux, the serial console must be used for logging into the root account for the first time.
@@ -121,7 +121,7 @@ After flashing the root filesystem is smaller than the eMMC. To utilize all spac
 Due to license restrictions V2X-specific documentation and software are available separately.
 Please contact SolidRun Support for access to sources and patches.
 
-Binaries including a README are automatically published [https://images.solid-run.com/IMX8/imx8dxl_v2x_build](here).
+Binaries including a README are automatically published [here](https://images.solid-run.com/IMX8/imx8dxl_v2x_build).
 
 ## IOs (Adapter Board)
 
@@ -270,7 +270,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 
        => ums mmc 0
 
-7. The computer should recognise a new USB drive. Flash the disk image using your tool of choice, e.g. [https://www.balena.io/etcher/](etcher.io).
+7. The computer should recognise a new USB drive. Flash the disk image using your tool of choice, e.g. [etcher.io](https://www.balena.io/etcher/).
 8. On the U-Boot console, cancel usb mass storage emulation by pressing ctrl+c, then reboot or reset the device.
 
 ### Flash only U-Boot to eMMC
