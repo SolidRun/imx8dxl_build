@@ -1,0 +1,25 @@
+From 2a560c526ad9f4426b067e40d22da3bfcb89f7a3 Mon Sep 17 00:00:00 2001
+From: Josua Mayer <josua@solid-run.com>
+Date: Thu, 2 Feb 2023 14:33:18 +0200
+Subject: [PATCH] cw-llc: solidrun som: enable support for ethernet connection
+
+Signed-off-by: Josua Mayer <josua@solid-run.com>
+---
+ kernel/drivers/cohda/llc/llc-eth.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/kernel/drivers/cohda/llc/llc-eth.h b/kernel/drivers/cohda/llc/llc-eth.h
+index b3d56fb..b1cb618 100644
+--- a/kernel/drivers/cohda/llc/llc-eth.h
++++ b/kernel/drivers/cohda/llc/llc-eth.h
+@@ -40,6 +40,7 @@
+      defined(BOARD_RE2L) || \
+      defined(BOARD_RE2Q) || \
+      defined(BOARD_MK6) || \
++     defined(BOARD_SRIMX8DXLSOM) || \
+      defined(__EVO__))
+ #define LLC_ETH_ENABLE 1
+ #endif
+-- 
+2.35.3
+
