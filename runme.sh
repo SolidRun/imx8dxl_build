@@ -312,7 +312,7 @@ if [ ! -f rootfs.e2.orig ] || [[ ${ROOTDIR}/${BASH_SOURCE[0]} -nt rootfs.e2.orig
 	fakeroot debootstrap --variant=minbase \
 		--arch=arm64 --components=main,contrib,non-free \
 		--foreign \
-		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,chrony,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,libpcap0.8,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,tio,usbutils,wget,wpasupplicant,xterm,xz-utils \
+		--include=apt-transport-https,bluez,busybox,ca-certificates,can-utils,command-not-found,chrony,curl,e2fsprogs,ethtool,fdisk,gpiod,gpsd,gpsd-tools,haveged,i2c-tools,ifupdown,iputils-ping,isc-dhcp-client,iw,initramfs-tools,libiio-utils,libpcap0.8,lm-sensors,locales,nano,net-tools,ntpdate,openssh-server,psmisc,python3-gps,python3-serial,rfkill,sudo,systemd-sysv,tio,usbutils,wget,wpasupplicant,xterm,xz-utils \
 		bullseye \
 		stage1 \
 		https://deb.debian.org/debian
