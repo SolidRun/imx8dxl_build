@@ -4,6 +4,7 @@
 : ${CROSS_COMPILE:=aarch64-linux-gnu-}
 : ${SOC_REVISION:=A0}
 : ${IMAGE_SIZE_MiB:=1000}
+: ${GATEWAY_REVISION:=1.1}
 
 ### Versions
 ATF_GIT_URI=https://github.com/nxp-imx/imx-atf
@@ -215,6 +216,19 @@ cp -v build/imx8dxl/release/bl31.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 # Build u-boot
 cd "${ROOTDIR}/build/uboot"
 make CROSS_COMPILE="$CROSS_COMPILE" imx8dxl_v2x_defconfig
+case ${GATEWAY_REVISION} in
+1.0)
+	UBOOT_DEFAULT_FDT_FILE="imx8dxl-v2x.dtb"
+	;;
+1.1|2.0)
+	UBOOT_DEFAULT_FDT_FILE="imx8dxl-v2x-v11.dtb"
+	;;
+*)
+	echo "Specified invalid gateway revision \"${GATEWAY_REVISION}\"!"
+	exit 1
+	;;
+esac
+printf "CONFIG_DEFAULT_FDT_FILE=\"%s\"\n" "${UBOOT_DEFAULT_FDT_FILE}" >> .config
 make -j$(nproc) CROSS_COMPILE="$CROSS_COMPILE"
 cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
