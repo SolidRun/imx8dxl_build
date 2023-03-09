@@ -261,7 +261,7 @@ cat > "${ROOTDIR}/images/linux/boot/extlinux/extlinux.conf" << EOF
 label linux
 	linux ../Image
 	fdtdir ..
-	append root=/dev/mmcblk0p1 ro rootwait
+	append root=/dev/mmcblk0p1 ro rootwait net.ifnames=0
 EOF
 
 # Build external Linux Headers package for compiling modules
