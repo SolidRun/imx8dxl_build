@@ -280,6 +280,14 @@ To achieve link up between two devices, both sides must be explicitly configured
     ethtool -s trx6 master-slave forced-slave
     ethtool -s trx6 master-slave forced-master
 
+## LTE Modem
+
+The carrier features a Quectel EC25 LTE modem, which is powered down by default.
+A systemd unit called `lte-power` is included in this image, but disabled by default.
+
+After the modem has booted, it will show up as `wwan0` and needs to be supplied with the APN name and SIM PIN (if present).
+Either use a suitable network manager for that or just use `mmcli` from the modemmanager package.
+
 ## Configure Boot Mode DIP Switch
 
 This table indicates valid boot-modes selectable via the DIP switch S1 on the Molex Carrier.
