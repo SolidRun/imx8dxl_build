@@ -185,7 +185,7 @@ if [ $dlfailed -ne 0 ]; then
 fi
 
 ### Compile
-set -e
+set -eu
 set -o pipefail
 
 # Copy SECO FW
@@ -277,7 +277,7 @@ tar -c -f - -T $tempfile | tar -C "${ROOTDIR}/images/linux-headers" -xf -
 cd "${ROOTDIR}/build/linux-build"
 find arch/arm64/include .config Module.symvers include scripts -type f > $tempfile
 tar -c -f - -T $tempfile | tar -C "${ROOTDIR}/images/linux-headers" -xf -
-rm -f $tmpfile
+rm -f $tempfile
 unset tempfile
 cd "${ROOTDIR}/images/linux-headers"
 tar cpf "${ROOTDIR}/images/linux-headers.tar" *
