@@ -2,4 +2,4 @@
 SUBSYSTEM=="gnss", GROUP="dialout"
 
 # restart chrony as pps device changes
-SUBSYSTEM=="pps", KERNEL=="pps0", RUN+="/usr/bin/systemctl --no-block restart chrony.service"
+SUBSYSTEM=="pps", KERNEL=="pps0", RUN+="/usr/bin/systemctl --no-block restart chrony.service", TAG+="systemd"
