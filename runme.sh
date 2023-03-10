@@ -301,6 +301,12 @@ fi
 # regenerate modules dependencies
 depmod -b "${ROOTDIR}/images/linux/usr" -F "${ROOTDIR}/build/linux-build/System.map" ${KRELEASE}
 
+# Generate firmware image version identifier
+install -v -d "${ROOTDIR}/images/linux/opt"
+echo "SOC_REVISION: ${SOC_REVISION}" > "${ROOTDIR}/images/linux/opt/image-revision.txt"
+echo "GATEWAY_REVISION: ${GATEWAY_REVISION}" >> "${ROOTDIR}/images/linux/opt/image-revision.txt"
+echo "GIT_VERSION: $(git describe --always)" >> "${ROOTDIR}/images/linux/opt/image-revision.txt"
+
 # Generate a Debian rootfs
 mkdir -p "${ROOTDIR}/build/debian"
 cd "${ROOTDIR}/build/debian"
