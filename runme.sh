@@ -246,6 +246,8 @@ cd "${ROOTDIR}/build/linux"
 find "${ROOTDIR}/configs/linux" -type f | sort | xargs ./scripts/kconfig/merge_config.sh -O "${ROOTDIR}/build/linux-build" -m arch/arm64/configs/imx_v8_defconfig /dev/null
 make -C "${ROOTDIR}/build/linux" O="${ROOTDIR}/build/linux-build" ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" olddefconfig
 cd "${ROOTDIR}/build/linux-build"
+#make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" menuconfig
+make ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" savedefconfig
 make -j$(nproc) ARCH=arm64 CROSS_COMPILE="${CROSS_COMPILE}" dtbs Image modules
 
 rm -rf "${ROOTDIR}/images/linux"

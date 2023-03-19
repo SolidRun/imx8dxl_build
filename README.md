@@ -125,6 +125,45 @@ Binaries including a README are automatically published [here](https://images.so
 
 ## IOs (Adapter Board)
 
+### USB (J1)
+
+The USB-A port can be configured as either Host or Peripheral at boot time through the Device-Tree:
+
+See `arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi`:
+
+```
+&usbotg1 {
+	srp-disable;
+	hnp-disable;
+	adp-disable;
+	power-active-high;
+	disable-over-current;
+	dr_mode = "peripheral";
+	status = "okay";
+};
+```
+
+The "dr_mode" property may be configured as either "host" or "peripheral".
+OTG mode requires a different physical connector and is not available.
+
+**Note that with Carrier revision 1.0 the resistor R1 on the adapter board should be disassembled when choosing peripheral, and reassembled for host mode. Carriers revision 1.1 and later include a power switch such that R1 may be assembled at all times.**
+
+Rebuilding and replacing the device-tree can be tedious for during development.
+It is possible to make the change dynamically through U-Boot.
+In that case however the automatic boot through boot-script or extlinux.conf can't be used, and all commands must be executed interactively:
+
+```
+load mmc 0:1 ${fdt_addr_r} /boot/${fdtfile}
+fdt addr ${fdt_addr_r}
+fdt resize
+fdt set /bus@5b000000/usb@5b0d0000 dr_mode host
+
+load mmc 0:1 ${kernel_addr_r} /boot/Image
+
+setenv bootargs root=/dev/mmcblk0p1 ro rootwait net.ifnames=0
+booti ${kernel_addr_r} - ${fdt_addr_r}
+```
+
 ### CAN-Bus (J8, J9)
 
 After booting the CAN network interfaces will show up in the output of the `ip` utility:
@@ -434,7 +473,7 @@ A docker image providing a consistent build environment can be used as below:
    ```
    docker build -t imx8dxl_build docker
    # optional with an apt proxy, e.g. apt-cacher-ng
-   # docker build --build-arg APTPROXY=http://127.0.0.1:3142 -t imx8mm_build docker
+   # docker build --build-arg APTPROXY=http://127.0.0.1:3142 -t imx8dxl_build docker
    ```
 2. Download "SCFW Porting Kit​ 1.13.0" for Linux 5.15.32_2.0.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
 3. invoke build script in working directory
