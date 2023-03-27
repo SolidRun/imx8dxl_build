@@ -393,6 +393,33 @@ fi;
 # Prepare final rootfs
 cp rootfs.e2.orig rootfs.e2
 
+# Add os-version to rootfs
+gen_os_version() {
+	local TIMESTAMP
+	local IMAGE_SOURCE_COMMIT
+
+	IMAGE_BUILD_DATE="$(date +%Y%m%d)"
+	IMAGE_SOURCE_COMMIT="unknown"
+	if [ -d ${ROOTDIR} ]; then
+		IMAGE_SOURCE_COMMIT="$(git -C ${ROOTDIR} rev-parse --short HEAD)"
+	fi
+
+	printf "PRETTY_NAME=\"%s\"\n" "Debian GNU/Linux 11 (bullseye) SolidRun Fork for i.MX8DXL"
+	printf "NAME=\"%s\"\n" "Debian GNU/Linux (SolidRun)"
+	printf "VERSION_ID=\"%s\"\n" "11"
+	printf "VERSION=\"%s\"\n" "11 (bullseye)"
+	printf "VERSION_CODENAME=%s\n" "bullseye"
+	printf "ID=%s\n" "debian"
+	printf "HOME_URL=\"%s\"\n" "https://www.solid-run.com/"
+	printf "SUPPORT_URL=\"%s\"\n" "https://www.solid-run.com/contact-us/#technical-support"
+	printf "BUG_REPORT_URL=\"%s\"\n" "https://www.solid-run.com/contact-us/#technical-support"
+	printf "IMAGE_BUILD_DATE=\"%s\"\n" "${IMAGE_BUILD_DATE}"
+	printf "IMAGE_SOURCE_COMMIT=\"%s\"\n" "${IMAGE_SOURCE_COMMIT}"
+
+}
+gen_os_version > "${ROOTDIR}/build/os-version"
+e2cp -G 0 -O 0 -P 644 "${ROOTDIR}/build/os-version" -d "${ROOTDIR}/build/debian/rootfs.e2:/etc"
+
 # Add kernel to rootfs
 find "${ROOTDIR}/images/linux" -type f -printf "%P\n" | e2cp -G 0 -O 0 -P 644 -s "${ROOTDIR}/images/linux" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
 
