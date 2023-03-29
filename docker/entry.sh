@@ -21,11 +21,13 @@ eval set -- "${FLAGS_ARGV}"
 
 # create build-user and group if not root
 user=root
+HOME=/root
 if [ "x${FLAGS_uid}" != "x0" ]; then
 	groupadd -g ${FLAGS_gid} build 2>/dev/null || true
 	useradd -s /bin/bash -u ${FLAGS_uid} -g ${FLAGS_gid} -m -G sudo build
 	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 	user=build
+	HOME=/home/build
 fi
 
 # preconfigure git identity
