@@ -351,6 +351,9 @@ systemctl enable systemd-networkd
 systemctl enable systemd-resolved
 ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
+# wipe machine-id (regenerates during first boot)
+echo uninitialized > /etc/machine-id
+
 # delete self
 rm -f /stage2.sh
 
