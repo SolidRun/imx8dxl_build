@@ -23,16 +23,16 @@ eval set -- "${FLAGS_ARGV}"
 user=root
 HOME=/root
 if [ "x${FLAGS_uid}" != "x0" ]; then
-	groupadd -g ${FLAGS_gid} build 2>/dev/null || true
-	useradd -s /bin/bash -u ${FLAGS_uid} -g ${FLAGS_gid} -m -G sudo build
-	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 	user=build
 	HOME=/home/build
+	groupadd -g ${FLAGS_gid} build 2>/dev/null || true
+	useradd -s /bin/bash -u ${FLAGS_uid} -g ${FLAGS_gid} -m -d ${HOME} -G sudo build
+	echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 fi
 
 # preconfigure git identity
-sudo -u $user git config --global user.name "LX2160A Toolchain Container"
-sudo -u $user git config --global user.email "support@solid-run.com"
+GIT_DIR=/dev/null git config --system user.name "i.MX8DXL Toolchain Container"
+GIT_DIR=/dev/null git config --system user.email "support@solid-run.com"
 
 cd /work
 # now run the build script as the build user
