@@ -391,6 +391,9 @@ EOF
 
 	# convert to ext4
 	tune2fs -O extents,uninit_bg,dir_index,has_journal rootfs.e2.orig
+
+	# fix errors
+	e2fsck -y rootfs.e2.orig
 fi;
 
 # Prepare final rootfs
