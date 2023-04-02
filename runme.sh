@@ -400,7 +400,7 @@ gen_os_version() {
 
 	IMAGE_BUILD_DATE="$(date +%Y%m%d)"
 	IMAGE_SOURCE_COMMIT="unknown"
-	if [ -d ${ROOTDIR} ]; then
+	if [ -d ${ROOTDIR}/.git ]; then
 		IMAGE_SOURCE_COMMIT="$(git -C ${ROOTDIR} rev-parse --short HEAD)"
 	fi
 
@@ -428,7 +428,26 @@ rm -f "${ROOTDIR}/images/linux/linux.tar*"
 cd "${ROOTDIR}/images/linux"; tar -c --owner=root:0 -f "${ROOTDIR}/images/linux.tar" *; cd "${ROOTDIR}"
 
 # Add overlay to rootfs
-find "${ROOTDIR}/overlay" -type f -printf "%P\n" | e2cp -G 0 -O 0 -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a
+overlay_file() {
+	while IFS='' read -r -a path; do
+		mode=`stat --printf "%a\n" "${ROOTDIR}/overlay/${path}"`
+		e2cp -v -G 0 -O 0 -P $mode -s "${ROOTDIR}/overlay" -d "${ROOTDIR}/build/debian/rootfs.e2:" -a $path
+	done
+}
+overlay_link() {
+	while IFS=' ' read -r -a args; do
+		if [[ ${args[0]} = /* ]]; then
+			# absolute links
+			e2ln -v "${ROOTDIR}/build/debian/rootfs.e2:${args[0]}" "${args[1]}"
+		else
+			# relative links
+			basedir="`dirname ${args[1]}`"
+			e2ln -v "${ROOTDIR}/build/debian/rootfs.e2:${basedir}/${args[0]}" "${args[1]}"
+		fi
+	done
+}
+find "${ROOTDIR}/overlay" -type f -printf "%P\n" | overlay_file
+find "${ROOTDIR}/overlay" -type l -printf "%l %P\n" | overlay_link
 
 # assemble final disk image
 rm -f "${ROOTDIR}/images/emmc.img"
