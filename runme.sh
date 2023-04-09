@@ -393,7 +393,13 @@ EOF
 	tune2fs -O extents,uninit_bg,dir_index,has_journal rootfs.e2.orig
 
 	# fix errors
-	e2fsck -y rootfs.e2.orig
+	s=0
+	e2fsck -y rootfs.e2.orig || s=$?
+	if [ $s -ge 4 ]; then
+		echo "Error: Couldn't repair generated rootfs."
+		rm -f rootfs.e2.orig
+		exit 1
+	fi
 fi;
 
 # Prepare final rootfs
