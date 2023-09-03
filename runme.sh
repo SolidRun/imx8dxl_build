@@ -5,6 +5,7 @@
 : ${SOC_REVISION:=A0}
 : ${IMAGE_SIZE_MiB:=1000}
 : ${GATEWAY_REVISION:=1.1}
+: ${SOM_REVISION:=2.1}
 
 ### Versions
 ATF_GIT_URI=https://github.com/nxp-imx/imx-atf
@@ -216,15 +217,18 @@ cp -v build/imx8dxl/release/bl31.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 # Build u-boot
 cd "${ROOTDIR}/build/uboot"
 make CROSS_COMPILE="$CROSS_COMPILE" imx8dxl_v2x_defconfig
-case ${GATEWAY_REVISION} in
-1.0)
+case "${GATEWAY_REVISION}:${SOM_REVISION}" in
+1.0:2.0)
 	UBOOT_DEFAULT_FDT_FILE="imx8dxl-v2x.dtb"
 	;;
-1.1|2.0)
+1.1:2.0|2.0:2.0)
 	UBOOT_DEFAULT_FDT_FILE="imx8dxl-v2x-v11.dtb"
 	;;
+1.1:2.1|2.0:2.1)
+	UBOOT_DEFAULT_FDT_FILE="imx8dxl-v2x-v11-som-v21.dtb"
+	;;
 *)
-	echo "Specified invalid gateway revision \"${GATEWAY_REVISION}\"!"
+	echo "Specified invalid combination of gateway revision \"${GATEWAY_REVISION}\" and som revision \"${SOM_REVISION}\"!"
 	exit 1
 	;;
 esac
