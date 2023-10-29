@@ -39,10 +39,10 @@ By default the system tries to acquire an IP address and DNS configuration via D
 
 To log in via SSH, an ssh key must be installed first. Copy your favourite public key, e.g. from `~/.ssh/id_ed25519.pub`, into a new file in the root users home directory at `~/.ssh/authorized_keys`:
 
-root@e7c450f97e59:~# mkdir .ssh
-root@e7c450f97e59:~# cat > .ssh/authorized_keys << EOF
-ssh-ed25519 AAAAinsertyour pubkey@here
-EOF
+    root@e7c450f97e59:~# mkdir .ssh
+    root@e7c450f97e59:~# cat > .ssh/authorized_keys << EOF
+    ssh-ed25519 AAAAinsertyour pubkey@here
+    EOF
 
 ### Expand Root Filesystem
 
@@ -483,7 +483,7 @@ A docker image providing a consistent build environment can be used as below:
    # optional with an apt proxy, e.g. apt-cacher-ng
    # docker build --build-arg APTPROXY=http://127.0.0.1:3142 -t imx8dxl_build docker
    ```
-2. Download "SCFW Porting Kit​ 1.13.0" for Linux 5.15.32_2.0.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
+2. Download "SCFW Porting Kit​ 1.14.0" for Linux 5.15.52-2.1.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
 3. invoke build script in working directory
    ```
    docker run --rm -i -t -v "$PWD":/work imx8dxl_build -u $(id -u) -g $(id -g)
