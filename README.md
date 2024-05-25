@@ -118,8 +118,8 @@ After flashing the root filesystem is smaller than the eMMC. To utilize all spac
 
 ## V2X DSRC
 
-Due to license restrictions V2X-specific documentation and software are available separately.
-Please contact SolidRun Support for access to sources and patches.
+Due to license restrictions V2X-specific documentation and software are available only to customers who have purchased a [SolidRun i.MX8DXL SoM with DSRC Modem]().
+Please create an account on [nxp.com](https://www.nxp.com/), then contact [SolidRun Support](https://www.solid-run.com/contact-us/#technical-support) to facilitate access through your nxp user account.
 
 Binaries including a README are automatically published [here](https://images.solid-run.com/IMX8/imx8dxl_v2x_build).
 
