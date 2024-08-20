@@ -1,7 +1,7 @@
-From a3bd7d707e33378f413c80d20cd6d73ac5428d1c Mon Sep 17 00:00:00 2001
+From e196eb4ca815121e60b5bd0b391a96fabb19219a Mon Sep 17 00:00:00 2001
 From: Vladimir Oltean <vladimir.oltean@nxp.com>
 Date: Wed, 9 Nov 2022 17:25:50 +0200
-Subject: [PATCH 1/6] net: dsa: sja1105: read and save the silicon revision
+Subject: [PATCH 01/25] net: dsa: sja1105: read and save the silicon revision
 
 It might happen that different SJA1110 silicon revisions need different
 initialization steps. Be prepared for that, by printing the silicon
@@ -32,7 +32,7 @@ index 9ba2ec2b966d..b1468a0a2149 100644
  	size_t max_xfer_len;
  	struct spi_device *spidev;
 diff --git a/drivers/net/dsa/sja1105/sja1105_main.c b/drivers/net/dsa/sja1105/sja1105_main.c
-index b7fb1d92ccd3..12ef07d8fa1f 100644
+index 0c89314006c9..e7f8b16440bf 100644
 --- a/drivers/net/dsa/sja1105/sja1105_main.c
 +++ b/drivers/net/dsa/sja1105/sja1105_main.c
 @@ -3215,6 +3215,7 @@ static int sja1105_check_device_id(struct sja1105_private *priv)
@@ -64,5 +64,5 @@ index b7fb1d92ccd3..12ef07d8fa1f 100644
  	ds = devm_kzalloc(dev, sizeof(*ds), GFP_KERNEL);
  	if (!ds)
 -- 
-2.38.1
+2.43.0
 

@@ -1,7 +1,7 @@
-From 6356818a425117a198dc02fe784a978eea7b204c Mon Sep 17 00:00:00 2001
+From e0a2e1535389c57076b10b83667a0e57cf2b8af5 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 7 Mar 2023 14:12:51 +0200
-Subject: [PATCH] board: solidrun: imx8dxl-sr-som: support
+Subject: [PATCH 4/5] board: solidrun: imx8dxl-sr-som: support
  CONFIG_DEFAULT_FDT_FILE
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
@@ -11,7 +11,7 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  2 files changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/configs/imx8dxl_v2x_defconfig b/configs/imx8dxl_v2x_defconfig
-index 804daa6810..f1e7bd50c6 100644
+index 804daa68100..f1e7bd50c6a 100644
 --- a/configs/imx8dxl_v2x_defconfig
 +++ b/configs/imx8dxl_v2x_defconfig
 @@ -191,3 +191,6 @@ CONFIG_BOOTCOMMAND="run distro_bootcmd"
@@ -22,7 +22,7 @@ index 804daa6810..f1e7bd50c6 100644
 +# default fdtfile name
 +CONFIG_DEFAULT_FDT_FILE=imx8dxl-v2x.dtb
 diff --git a/include/configs/imx8dxl_sr_som.h b/include/configs/imx8dxl_sr_som.h
-index 3eb3e4d913..d24198e692 100644
+index 3eb3e4d9137..d24198e692e 100644
 --- a/include/configs/imx8dxl_sr_som.h
 +++ b/include/configs/imx8dxl_sr_som.h
 @@ -120,7 +120,7 @@
@@ -35,5 +35,5 @@ index 3eb3e4d913..d24198e692 100644
  
  #endif /* CONFIG_SPL_BUILD */
 -- 
-2.35.3
+2.43.0
 

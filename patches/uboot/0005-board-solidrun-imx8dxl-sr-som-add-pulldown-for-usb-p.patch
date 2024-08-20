@@ -1,8 +1,8 @@
-From e8d8bb88b38be65839531256e79e4e0f38cdfad0 Mon Sep 17 00:00:00 2001
+From 2dd0b4f3ac798a8b352866d111fa4835dd826e44 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 19 Mar 2023 13:09:16 +0200
-Subject: [PATCH] board: solidrun: imx8dxl-sr-som: add pulldown for usb power
- switch
+Subject: [PATCH 5/5] board: solidrun: imx8dxl-sr-som: add pulldown for usb
+ power switch
 
 Carriers revision 1.1 and later have a power switch controlling the
 external USB-A port. Force it disabled by default to operate safely in
@@ -16,7 +16,7 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm/dts/fsl-imx8dxl-sr-som.dts b/arch/arm/dts/fsl-imx8dxl-sr-som.dts
-index fa12a77a35..2868e39af8 100644
+index fa12a77a35c..2868e39af8c 100644
 --- a/arch/arm/dts/fsl-imx8dxl-sr-som.dts
 +++ b/arch/arm/dts/fsl-imx8dxl-sr-som.dts
 @@ -19,7 +19,7 @@
@@ -43,5 +43,5 @@ index fa12a77a35..2868e39af8 100644
  			fsl,pins = <
  				SC_P_EMMC0_CLK_CONN_EMMC0_CLK		0x06000041
 -- 
-2.35.3
+2.43.0
 

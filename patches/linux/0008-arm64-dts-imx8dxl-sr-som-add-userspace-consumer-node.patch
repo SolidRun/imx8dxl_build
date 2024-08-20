@@ -1,7 +1,7 @@
-From a6b2bfaa700a57dfe7f5bae38257eb64d33927e8 Mon Sep 17 00:00:00 2001
+From af0adb1d8205488635ae87b5728e8bb815fdc039 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Thu, 1 Dec 2022 19:47:03 +0200
-Subject: [PATCH 8/9] arm64: dts: imx8dxl-sr-som: add userspace consumer node
+Subject: [PATCH 08/25] arm64: dts: imx8dxl-sr-som: add userspace consumer node
  for sxf1800
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
@@ -10,7 +10,7 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 8 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
-index 695cdea44840..ba0f5b62d6f3 100644
+index f4b9c6353abe..d1a027d42b2c 100644
 --- a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
 +++ b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
 @@ -90,6 +90,14 @@ v2x_secure_reg_1v8: regulator-v2x-secure-1v8 {
@@ -29,5 +29,5 @@ index 695cdea44840..ba0f5b62d6f3 100644
  
  &edma2 {
 -- 
-2.38.1
+2.43.0
 

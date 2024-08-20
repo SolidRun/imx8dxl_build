@@ -1,7 +1,7 @@
-From cc78fa9832e66dbaacc6614ab65181d08bf492de Mon Sep 17 00:00:00 2001
+From c96e544289457f31526d2e053c0ac5bf054af21c Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 3 Sep 2023 15:03:57 +0200
-Subject: [PATCH 22/24] arm64: dts: imx8dxl-v2x-v11: fix pinmux setting for usb
+Subject: [PATCH 22/25] arm64: dts: imx8dxl-v2x-v11: fix pinmux setting for usb
  pwr-enable gpio
 
 The USB power-switch expects open-drain to enable, and pull-down to
@@ -28,5 +28,5 @@ index 715e51b62a99..ee678703bcf4 100644
  	};
  
 -- 
-2.35.3
+2.43.0
 

@@ -320,7 +320,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 7. The computer should recognise a new USB drive. Flash the disk image using your tool of choice, e.g. [etcher.io](https://www.balena.io/etcher/).
 8. On the U-Boot console, cancel usb mass storage emulation by pressing ctrl+c, then reboot or reset the device.
 
-### Flash only U-Boot to eMMC
+### Load U-Boot to RAM only
 
 0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing a bootloader to eMMC*
 1. Connect the serial console to the computer, and open it.
@@ -373,7 +373,7 @@ All steps in this section require using NXPs `uuu` application to interface with
 
    The last line indicates that the bootloader is waiting for further USB commands via the fastboot protocol. By pressing Ctrl+C the U-Boot commandline can be accessed instead.
 
-### Flash U-Boot and Disk Image to eMMC
+### Flash only U-Boot to eMMC
 
 All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
 
@@ -381,7 +381,48 @@ All steps in this section require using NXPs `uuu` application to interface with
 1. Connect the serial console to the computer, and open it.
 2. Connect the first USB-OTG port via a type A to type A cable to the computer.
 3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
-4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the flash-emmc.uuu script, to write `images/emmc.img` and `images/uboot.bin` to the eMMC:
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the `flash-uboot.uuu` script, to write `images/uboot.bin` to the eMMC:
+   `[path-to-]uuu flash-uboot.uuu`
+5. Connect to power, or reset the device.
+6. The serial console should now provide access to the early boot log, and indicate writing to the eMMC:
+
+       Run fastboot ...
+       auto usb 0
+       Detect USB boot. Will enter fastboot mode!
+       flash target is MMC:1
+       MMC: no card present
+       MMC card init failed!
+       MMC: no card present
+       ** Block device MMC 1 not supported
+       Detect USB boot. Will enter fastboot mode!
+       flash target is MMC:0
+       switch to partitions #0, OK
+       mmc0(part 0) is current device
+       Starting download of 1171456 bytes
+       ........
+       downloading of 1171456 bytes finished
+       writing to partition 'bootloader'
+       Initializing 'bootloader'
+       switch to partitions #1, OK
+       mmc0(part 1) is current device
+       Writing 'bootloader'
+
+       MMC write: dev # 0, block # 0, count 2288 ... 2288 blocks written: OK
+       Writing 'bootloader' DONE!
+
+7. Once the `uuu` command indicates "done", the flashing is complete.
+
+### Flash U-Boot and Disk Image to eMMC
+
+**Note: This method has been observed unreliable, transfer of large images are interrupted at random, prefer `ums` command described above.**
+
+All steps in this section require using NXPs `uuu` application to interface with the Boot-ROM inside the SoC. Precompiled binaries are available [here on GitHub](https://github.com/NXPmicro/mfgtools/releases), and through the package managers on some distributions.
+
+0. Configure the DIP Switch to boot from USB. This step is optional *only before flashing the eMMC for the first time*
+1. Connect the serial console to the computer, and open it.
+2. Connect the first USB-OTG port via a type A to type A cable to the computer.
+3. Acquire the full path to the uuu command (e.g. `C:\Users\Josua\Desktop\uuu.exe`) or copy it into the imx8dxl_build folder.
+4. From a CLI at the root of imx8dxl_build folder, Instruct NXPs `uuu` command to execute the `flash-emmc.uuu` script, to write `images/emmc.img` and `images/uboot.bin` to the eMMC:
    `[path-to-]uuu flash-emmc.uuu`
 5. Connect to power, or reset the device.
 6. The serial console should now provide access to the early boot log, and indicate writing to the eMMC:

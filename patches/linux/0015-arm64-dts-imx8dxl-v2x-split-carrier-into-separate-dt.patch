@@ -1,7 +1,7 @@
-From cdee3350d6348bd365acfb16ccb7cfdaa60ea3c1 Mon Sep 17 00:00:00 2001
+From b97e55eac52aef24ba928b424583dd66d55bd739 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Sun, 5 Mar 2023 10:14:04 +0200
-Subject: [PATCH 15/17] arm64: dts: imx8dxl-v2x: split carrier into separate
+Subject: [PATCH 15/25] arm64: dts: imx8dxl-v2x: split carrier into separate
  dtsi
 
 Split out the carrier into dtsi to simplify introducing new revisions of
@@ -1154,5 +1154,5 @@ index d3cb9dd497d3..afd62adc066c 100644
 +	compatible = "solidrun,v2x-gateway", "fsl,imx8dxl";
  };
 -- 
-2.35.3
+2.43.0
 

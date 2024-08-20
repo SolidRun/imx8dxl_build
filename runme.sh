@@ -9,22 +9,22 @@
 
 ### Versions
 ATF_GIT_URI=https://github.com/nxp-imx/imx-atf
-ATF_RELEASE=tags/lf-5.15.52-2.1.0
+ATF_RELEASE=tags/lf-5.15.71-2.2.2
 UBOOT_GIT_URI=https://github.com/nxp-imx/uboot-imx
-UBOOT_RELEASE=tags/lf-5.15.52-2.1.0
+UBOOT_RELEASE=tags/lf-5.15.71-2.2.2
 MKIMAGE_GIT_URI=https://github.com/nxp-imx/imx-mkimage
-MKIMAGE_RELEASE=tags/lf-5.15.52-2.1.0
-SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-5.8.7.1.bin
-SECO_RELEASE=5.8.7.1
-SCFW_FILE=L5.15.52_2.1.0_SCFWKIT-1.14.0.tar.gz
-SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L5.15.52_2.1.0_SCFWKIT-1.14.0&appType=license"
-SCFW_RELEASE=1.14.0
+MKIMAGE_RELEASE=tags/lf-5.15.71-2.2.2
+SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-5.9.0.bin
+SECO_RELEASE=5.9.0
+SCFW_FILE=IMX-SCFW-PORTING-KIT-1.15.0.tar.gz
+SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L6.1.22_2.0.0_SCFWKIT-1.15.0&appType=license"
+SCFW_RELEASE=1.15.0
 LINUX_GIT_URI=https://github.com/nxp-imx/linux-imx
-LINUX_RELEASE=lf-5.15.52-2.1.0
+LINUX_RELEASE=lf-5.15.71-2.2.2
 SAFSDIO_FILE=saf-sdio_RFP1.0.4.tgz
-SAFSDIO_FILE_URI="Roadlink BSP v0.15"
+SAFSDIO_FILE_URI="NXP SAF5400 BSP v0.15 (linux-roadlink_evk2.0-v0.15.tgz:bsp/v2x-src/saf5x00)"
 LLC_FILE=llc_RFP2.5.tgz
-LLC_FILE_URI="Roadlink BSP v0.15"
+LLC_FILE_URI="NXP SAF5400 BSP v0.15 (linux-roadlink_evk2.0-v0.15.tgz:bsp/v2x-src/saf5x00)"
 
 ###
 
@@ -190,9 +190,18 @@ set -eu
 set -o pipefail
 
 # Copy SECO FW
+case ${SOC_REVISION,,} in
+	a0)
+		# seco knows a0 as a1.
+		SECO_R=a1
+	;;
+	*)
+		SECO_R=${SOC_REVISION,,}
+	;;
+esac
 cd "${ROOTDIR}/build/seco"
-cp -v imx-seco-${SECO_RELEASE}/firmware/seco/mx8dxl${SOC_REVISION,,}-ahab-container.img "${ROOTDIR}/build/mkimage/iMX8DXL/"
-cp -v imx-seco-${SECO_RELEASE}/firmware/seco/mx8dxl${SOC_REVISION,,}-ahab-container.img "${ROOTDIR}/build/uboot/ahab-container.img"
+cp -v imx-seco-${SECO_RELEASE}/firmware/seco/mx8dxl${SECO_R}-ahab-container.img "${ROOTDIR}/build/mkimage/iMX8DXL/"
+cp -v imx-seco-${SECO_RELEASE}/firmware/seco/mx8dxl${SECO_R}-ahab-container.img "${ROOTDIR}/build/uboot/ahab-container.img"
 
 # Build SCFW
 case ${SOC_REVISION,,} in

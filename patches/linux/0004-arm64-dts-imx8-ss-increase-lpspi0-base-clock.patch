@@ -1,7 +1,7 @@
-From 6732d05c8125b3543ecb20f20337cdd371489bfc Mon Sep 17 00:00:00 2001
+From 6568235e0594b98e557d540cf7087d7043e96e1d Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 30 Aug 2022 10:11:46 +0300
-Subject: [PATCH 4/6] arm64: dts: imx8-ss: increase lpspi0 base clock
+Subject: [PATCH 04/25] arm64: dts: imx8-ss: increase lpspi0 base clock
 
 Change the clock for first spi controller to 60MHz, same as used for all
 other SPIs.
@@ -15,10 +15,10 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/arm64/boot/dts/freescale/imx8-ss-dma.dtsi b/arch/arm64/boot/dts/freescale/imx8-ss-dma.dtsi
-index 83813cbbb7c2..c70d9b868acd 100644
+index d2a6bf233a33..908b50cf0b3c 100644
 --- a/arch/arm64/boot/dts/freescale/imx8-ss-dma.dtsi
 +++ b/arch/arm64/boot/dts/freescale/imx8-ss-dma.dtsi
-@@ -490,7 +490,7 @@ lpspi0: spi@5a000000 {
+@@ -530,7 +530,7 @@ lpspi0: spi@5a000000 {
  			 <&spi0_lpcg 1>;
  		clock-names = "per", "ipg";
  		assigned-clocks = <&clk IMX_SC_R_SPI_0 IMX_SC_PM_CLK_PER>;
@@ -28,5 +28,5 @@ index 83813cbbb7c2..c70d9b868acd 100644
  		dma-names = "tx","rx";
  		dmas = <&edma2 1 0 0>, <&edma2 0 0 1>;
 -- 
-2.38.1
+2.43.0
 

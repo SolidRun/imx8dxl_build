@@ -1,8 +1,8 @@
-From 8f93fcb1b68eddd2b8825498c006dda83a1b75d0 Mon Sep 17 00:00:00 2001
+From 7bde5fbd0ffe0cd60c6df2e2ee3e8c2a3c1a6696 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Wed, 22 Mar 2023 10:57:59 +0200
-Subject: [PATCH] arm64: dts: imx8dxl-v2x-v11: fix interrupt support for gpio
- expander
+Subject: [PATCH 18/25] arm64: dts: imx8dxl-v2x-v11: fix interrupt support for
+ gpio expander
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
 ---
@@ -35,5 +35,5 @@ index 61aba931b24e..715e51b62a99 100644
  	interrupt-parent = <&lsio_gpio0>;
  	interrupts = <20 IRQ_TYPE_EDGE_FALLING>;
 -- 
-2.35.3
+2.43.0
 

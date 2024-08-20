@@ -1,7 +1,7 @@
-From 2b5c0e089b3d80aa3fd37f7230808c86b34c8ac7 Mon Sep 17 00:00:00 2001
+From 6797aaf0e630e1072a922dcc8cef15b7b01ef12d Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 26 Jul 2022 11:27:12 +0300
-Subject: [PATCH 3/3] board: solidrun: add imx8dxl som
+Subject: [PATCH 3/5] board: solidrun: add imx8dxl som
 
 Signed-off-by: Josua Mayer <josua@solid-run.com>
 ---
@@ -30,7 +30,7 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  create mode 100644 include/configs/imx8dxl_sr_som.h
 
 diff --git a/arch/arm/dts/Makefile b/arch/arm/dts/Makefile
-index 0170c9c897..f1148bdcf3 100644
+index 709fdaecd7d..f5c35043276 100644
 --- a/arch/arm/dts/Makefile
 +++ b/arch/arm/dts/Makefile
 @@ -953,6 +953,7 @@ dtb-$(CONFIG_ARCH_IMX8) += \
@@ -43,7 +43,7 @@ index 0170c9c897..f1148bdcf3 100644
  
 diff --git a/arch/arm/dts/fsl-imx8dxl-sr-som-u-boot.dtsi b/arch/arm/dts/fsl-imx8dxl-sr-som-u-boot.dtsi
 new file mode 100644
-index 0000000000..ccf57a2098
+index 00000000000..ccf57a20986
 --- /dev/null
 +++ b/arch/arm/dts/fsl-imx8dxl-sr-som-u-boot.dtsi
 @@ -0,0 +1,116 @@
@@ -165,7 +165,7 @@ index 0000000000..ccf57a2098
 +};
 diff --git a/arch/arm/dts/fsl-imx8dxl-sr-som.dts b/arch/arm/dts/fsl-imx8dxl-sr-som.dts
 new file mode 100644
-index 0000000000..fa12a77a35
+index 00000000000..fa12a77a35c
 --- /dev/null
 +++ b/arch/arm/dts/fsl-imx8dxl-sr-som.dts
 @@ -0,0 +1,195 @@
@@ -365,10 +365,10 @@ index 0000000000..fa12a77a35
 +	status = "okay";
 +};
 diff --git a/arch/arm/mach-imx/imx8/Kconfig b/arch/arm/mach-imx/imx8/Kconfig
-index a2f29ffa90..4ad6c549cb 100644
+index df383fe9b99..c5d6fd9f9c6 100644
 --- a/arch/arm/mach-imx/imx8/Kconfig
 +++ b/arch/arm/mach-imx/imx8/Kconfig
-@@ -195,6 +195,15 @@ config TARGET_IMX8DXL_DDR3_EVK
+@@ -196,6 +196,15 @@ config TARGET_IMX8DXL_DDR3_EVK
  	select ARCH_MISC_INIT
  	select SPL_CRYPTO if SPL
  
@@ -384,7 +384,7 @@ index a2f29ffa90..4ad6c549cb 100644
  endchoice
  
  source "board/freescale/imx8qm_mek/Kconfig"
-@@ -209,6 +218,7 @@ source "board/toradex/apalis-imx8/Kconfig"
+@@ -210,6 +219,7 @@ source "board/toradex/apalis-imx8/Kconfig"
  source "board/toradex/colibri-imx8x/Kconfig"
  source "board/toradex/apalis-imx8x/Kconfig"
  source "board/siemens/capricorn/Kconfig"
@@ -394,7 +394,7 @@ index a2f29ffa90..4ad6c549cb 100644
  	bool "Support SNVS configuration"
 diff --git a/board/solidrun/imx8dxl_som/Kconfig b/board/solidrun/imx8dxl_som/Kconfig
 new file mode 100644
-index 0000000000..9d31065804
+index 00000000000..9d310658042
 --- /dev/null
 +++ b/board/solidrun/imx8dxl_som/Kconfig
 @@ -0,0 +1,17 @@
@@ -417,7 +417,7 @@ index 0000000000..9d31065804
 +endif
 diff --git a/board/solidrun/imx8dxl_som/Makefile b/board/solidrun/imx8dxl_som/Makefile
 new file mode 100644
-index 0000000000..f031c5fb50
+index 00000000000..f031c5fb500
 --- /dev/null
 +++ b/board/solidrun/imx8dxl_som/Makefile
 @@ -0,0 +1,8 @@
@@ -431,7 +431,7 @@ index 0000000000..f031c5fb50
 +obj-$(CONFIG_SPL_BUILD) += spl.o
 diff --git a/board/solidrun/imx8dxl_som/imx8dxl_evk.c b/board/solidrun/imx8dxl_som/imx8dxl_evk.c
 new file mode 100644
-index 0000000000..78d40c0dee
+index 00000000000..78d40c0dee7
 --- /dev/null
 +++ b/board/solidrun/imx8dxl_som/imx8dxl_evk.c
 @@ -0,0 +1,165 @@
@@ -602,7 +602,7 @@ index 0000000000..78d40c0dee
 +#endif
 diff --git a/board/solidrun/imx8dxl_som/imximage.cfg b/board/solidrun/imx8dxl_som/imximage.cfg
 new file mode 100644
-index 0000000000..e5f2a9e817
+index 00000000000..e5f2a9e817f
 --- /dev/null
 +++ b/board/solidrun/imx8dxl_som/imximage.cfg
 @@ -0,0 +1,22 @@
@@ -630,7 +630,7 @@ index 0000000000..e5f2a9e817
 +IMAGE A35 spl/u-boot-spl.bin 0x00100000
 diff --git a/board/solidrun/imx8dxl_som/spl.c b/board/solidrun/imx8dxl_som/spl.c
 new file mode 100644
-index 0000000000..d23abd8987
+index 00000000000..d23abd89879
 --- /dev/null
 +++ b/board/solidrun/imx8dxl_som/spl.c
 @@ -0,0 +1,87 @@
@@ -723,7 +723,7 @@ index 0000000000..d23abd8987
 +}
 diff --git a/board/solidrun/imx8dxl_som/uboot-container.cfg b/board/solidrun/imx8dxl_som/uboot-container.cfg
 new file mode 100644
-index 0000000000..9ef26331c1
+index 00000000000..9ef26331c13
 --- /dev/null
 +++ b/board/solidrun/imx8dxl_som/uboot-container.cfg
 @@ -0,0 +1,13 @@
@@ -742,7 +742,7 @@ index 0000000000..9ef26331c1
 +IMAGE A35 u-boot.bin	CONFIG_SYS_TEXT_BASE
 diff --git a/configs/imx8dxl_v2x_defconfig b/configs/imx8dxl_v2x_defconfig
 new file mode 100644
-index 0000000000..804daa6810
+index 00000000000..804daa68100
 --- /dev/null
 +++ b/configs/imx8dxl_v2x_defconfig
 @@ -0,0 +1,193 @@
@@ -941,7 +941,7 @@ index 0000000000..804daa6810
 +CONFIG_SUPPORT_RAW_INITRD=y
 diff --git a/include/configs/imx8dxl_sr_som.h b/include/configs/imx8dxl_sr_som.h
 new file mode 100644
-index 0000000000..3eb3e4d913
+index 00000000000..3eb3e4d9137
 --- /dev/null
 +++ b/include/configs/imx8dxl_sr_som.h
 @@ -0,0 +1,128 @@
@@ -1074,5 +1074,5 @@ index 0000000000..3eb3e4d913
 +
 +#endif /* _CONFIG_IMX8DXL_SR_SOM_H */
 -- 
-2.38.1
+2.43.0
 

@@ -1,7 +1,7 @@
-From 0c8c79c18d2e912a8957202653e4349ed63bc843 Mon Sep 17 00:00:00 2001
+From 887d045ef64dc94e3f1c4419cd26541079f65629 Mon Sep 17 00:00:00 2001
 From: Mike Looijmans <mike.looijmans@topic.nl>
 Date: Mon, 7 Nov 2022 09:54:07 +0100
-Subject: [PATCH 13/17] dt-bindings: rtc: ds1307: Add support for Epson RX8111
+Subject: [PATCH 13/25] dt-bindings: rtc: ds1307: Add support for Epson RX8111
 
 The rx_8111 is quite similar to the rx_8030. This adds support for this
 chip to the ds1307 driver.
@@ -27,5 +27,5 @@ index 36f610bb051e..43dab4e239b6 100644
  - reg: I2C bus address of the device
  
 -- 
-2.35.3
+2.43.0
 

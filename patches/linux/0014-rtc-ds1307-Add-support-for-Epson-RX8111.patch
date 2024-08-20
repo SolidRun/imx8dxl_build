@@ -1,7 +1,7 @@
-From ea0bbc29bf7966eaf82d8b6fab4be6f84cca0789 Mon Sep 17 00:00:00 2001
+From 438a59374fe059b54a054080d44bca70286ed428 Mon Sep 17 00:00:00 2001
 From: Mike Looijmans <mike.looijmans@topic.nl>
 Date: Mon, 7 Nov 2022 09:54:08 +0100
-Subject: [PATCH 14/17] rtc: ds1307: Add support for Epson RX8111
+Subject: [PATCH 14/25] rtc: ds1307: Add support for Epson RX8111
 
 The rx_8111 is quite similar to the rx_8030. This adds support for this
 chip to the ds1307 driver. Date/time and alarm registers are in the
@@ -401,5 +401,5 @@ index 336cb9aa5e33..2c5dff45a246 100644
  		err = regmap_read(ds1307->regmap, DS1388_REG_CONTROL, &tmp);
  		if (err) {
 -- 
-2.35.3
+2.43.0
 

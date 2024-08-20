@@ -1,7 +1,7 @@
-From b5d7a9427f2d38173114fabe228539b30a67cf16 Mon Sep 17 00:00:00 2001
+From ea94cee2e737668f43af4ae645146d3dd8561899 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 2 May 2023 15:55:37 +0300
-Subject: [PATCH]  arm64: dts: imx8dxl-v2x: enable power for lte-vbat
+Subject: [PATCH 20/25] arm64: dts: imx8dxl-v2x: enable power for lte-vbat
  userspace-consumer
 
 userspace-consumer needs its own status indication, or it will turn off
@@ -26,5 +26,5 @@ index 9a78f9a37de3..3923a535c11f 100644
  };
  
 -- 
-2.35.3
+2.43.0
 

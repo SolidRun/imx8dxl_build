@@ -1,7 +1,7 @@
-From ecfaad08d82caf833158f686baab80712e257768 Mon Sep 17 00:00:00 2001
+From 86944ef42cdd3d5b888c2c244d80c9316251ff19 Mon Sep 17 00:00:00 2001
 From: Laxman Dewangan <ldewangan@...dia.com>
 Date: Wed, 30 Jul 2014 19:23:59 +0530
-Subject: [PATCH 7/8] regulator: userspace-consumer: add DT support
+Subject: [PATCH 07/25] regulator: userspace-consumer: add DT support
 
 Add DT support of the regulator driver userspace-consumer.
 The supply names for this driver is provided through DT properties
@@ -98,5 +98,5 @@ index 8ca28664776e..3d08197beee2 100644
  };
  
 -- 
-2.38.1
+2.43.0
 
