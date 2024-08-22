@@ -247,7 +247,7 @@ cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
 # Assemble bootable image
 cd "${ROOTDIR}/build/mkimage"
-make SOC=iMX8DXL REV=${SOC_REVISION^^} flash
+make SOC=iMX8DXL REV=${SECO_R^^} flash
 mkdir -p ${ROOTDIR}/images
 cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 
