@@ -1,25 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# SPDX-License-Identifier: BSD-3-Clause
 
-GPIO_RESETN=43 # 1*32+11
-GPIO_PWRKEY=44 # 1*32+12
+GPIO_RESETN="5d090000.gpio 11"
+GPIO_PWRKEY="5d090000.gpio 12"
 
-for gpio in $GPIO_RESETN $GPIO_PWRKEY; do
-    if [ ! -e /sys/class/gpio/gpio$gpio ]; then
-        echo $gpio > /sys/class/gpio/export
-    fi
-    echo out > /sys/class/gpio/gpio$gpio/direction
-done
-
-cat /sys/class/gpio/gpio$GPIO_RESETN/value
-cat /sys/class/gpio/gpio$GPIO_PWRKEY/value
+gpioget ${GPIO_RESETN}
+gpioget ${GPIO_PWRKEY}
 
 # Initial Settings:
 # - disable vbat
 # - assert reset
 # - deassert power key
 echo disabled > /sys/devices/platform/userspace-consumer-lte-vbat/state
-echo 0 > /sys/class/gpio/gpio$GPIO_RESETN/value
-echo 0 > /sys/class/gpio/gpio$GPIO_PWRKEY/value
+gpioset ${GPIO_RESETN}=0
+gpioset ${GPIO_PWRKEY}=1
 
 sleep 1
 
@@ -28,6 +22,8 @@ sleep 1
 # - deassert reset
 # - toggle power key
 echo enabled > /sys/devices/platform/userspace-consumer-lte-vbat/state
-echo 1 > /sys/class/gpio/gpio$GPIO_RESETN/value
-echo 1 > /sys/class/gpio/gpio$GPIO_PWRKEY/value
-echo 0 > /sys/class/gpio/gpio$GPIO_PWRKEY/value
+gpioset ${GPIO_RESETN}=1
+sleep 0.03
+gpioset ${GPIO_PWRKEY}=0
+sleep 0.5
+gpioset ${GPIO_PWRKEY}=1
