@@ -217,6 +217,7 @@ cd "${ROOTDIR}/build/scfw/scfw_export_mx8"
 make TOOLS="${ROOTDIR}/tools" R=${SCFW_R^^} B=evk D=0 M=0 dxl
 cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/build/uboot/mx8dxl-evk-scfw-tcm.bin"
 cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
+cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/images/mx8dxl-sr-som-scfw-tcm.bin"
 
 # Build ATF
 cd "${ROOTDIR}/build/atf"
