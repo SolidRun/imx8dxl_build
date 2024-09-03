@@ -217,6 +217,7 @@ cd "${ROOTDIR}/build/scfw/scfw_export_mx8"
 make TOOLS="${ROOTDIR}/tools" R=${SCFW_R^^} B=evk D=0 M=0 dxl
 cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/build/uboot/mx8dxl-evk-scfw-tcm.bin"
 cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
+mkdir -p ${ROOTDIR}/images
 cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/images/mx8dxl-sr-som-scfw-tcm.bin"
 
 # Build ATF
@@ -249,7 +250,6 @@ cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 # Assemble bootable image
 cd "${ROOTDIR}/build/mkimage"
 make SOC=iMX8DXL REV=${SECO_R^^} flash
-mkdir -p ${ROOTDIR}/images
 cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 
 echo "Finished compiling bootloader image."
