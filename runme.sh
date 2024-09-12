@@ -246,10 +246,11 @@ esac
 printf "CONFIG_DEFAULT_FDT_FILE=\"%s\"\n" "${UBOOT_DEFAULT_FDT_FILE}" >> .config
 make -j$(nproc) CROSS_COMPILE="$CROSS_COMPILE"
 cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
+cp -v spl/u-boot-spl.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
 # Assemble bootable image
 cd "${ROOTDIR}/build/mkimage"
-make SOC=iMX8DXL REV=${SECO_R^^} flash
+make SOC=iMX8DXL REV=${SECO_R^^} flash_spl
 cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 
 echo "Finished compiling bootloader image."

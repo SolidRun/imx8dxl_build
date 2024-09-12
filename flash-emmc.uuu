@@ -2,6 +2,11 @@ uuu_version 1.2.39
 
 SDPS: boot -f images/uboot.bin
 
+# if SPL is used, load u-boot stage
+SDPV: delay 1000
+SDPV: write -f images/uboot.bin -skipspl
+SDPV: jump
+
 CFG: FB: -vid 0x1fc9 -pid 0x0152
 
 FB: ucmd setenv fastboot_dev mmc
