@@ -524,7 +524,7 @@ A docker image providing a consistent build environment can be used as below:
    # optional with an apt proxy, e.g. apt-cacher-ng
    # docker build --build-arg APTPROXY=http://127.0.0.1:3142 -t imx8dxl_build docker
    ```
-2. Download "SCFW Porting Kit​ 1.14.0" for Linux 5.15.52-2.1.0 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
+2. Download "SCFW Porting Kit​ 1.15.0" for Linux 5.15.71-2.2.2 from [NXP IMXLINUX](https://www.nxp.com/design/software/embedded-software/i-mx-software/embedded-linux-for-i-mx-applications-processors:IMXLINUX) and place it in the root of this repository (first time only)
 3. invoke build script in working directory
    ```
    docker run --rm -i -t -v "$PWD":/work imx8dxl_build -u $(id -u) -g $(id -g)
