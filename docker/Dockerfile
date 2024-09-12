@@ -16,7 +16,7 @@ RUN set -e; \
 
 RUN set -e; \
 	apt-get update; \
-	apt-get --no-install-recommends -y install bc bison build-essential ca-certificates crossbuild-essential-arm64 debootstrap device-tree-compiler e2tools fakeroot fdisk flex git kmod libncurses-dev libssl-dev make qemu-system-arm sudo wget xz-utils; \
+	apt-get --no-install-recommends -y install bc bison build-essential ca-certificates crossbuild-essential-arm64 crossbuild-essential-armhf debootstrap device-tree-compiler e2tools fakeroot fdisk flex git kmod libncurses-dev libssl-dev make python3 python3-pycryptodome python3-cryptography python3-pyelftools qemu-system-arm sudo wget xz-utils; \
 	:
 
 # build environment

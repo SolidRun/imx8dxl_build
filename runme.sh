@@ -2,16 +2,30 @@
 
 ### Options
 : ${CROSS_COMPILE:=aarch64-linux-gnu-}
+: ${CROSS_COMPILE32:=arm-linux-gnueabihf-}
 : ${SOC_REVISION:=A0}
 : ${IMAGE_SIZE_MiB:=1000}
 : ${GATEWAY_REVISION:=1.1}
 : ${SOM_REVISION:=2.1}
+# optee-os secure storage on emmc rpmb
+# requires protected hardware-unique-key implemetation:
+# - tee_otp_get_hw_unique_key
+# Implemented by optee-os imx caam driver.
+: ${OPTEE_STORAGE_PRIVATE_RPMB:=true}
+# optee-os secure storage with insecure real-world fs
+# requires monotonic counter implementation to be secure:
+# - nv_counter_get_ree_fs
+# - nv_counter_incr_ree_fs_to
+# Not implemented.
+: ${OPTEE_STORAGE_PRIVATE_REE:=false}
 
 ### Versions
 ATF_GIT_URI=https://github.com/nxp-imx/imx-atf
 ATF_RELEASE=tags/lf-5.15.71-2.2.2
 UBOOT_GIT_URI=https://github.com/nxp-imx/uboot-imx
 UBOOT_RELEASE=tags/lf-5.15.71-2.2.2
+OPTEE_OS_GIT_URI=https://github.com/nxp-imx/imx-optee-os
+OPTEE_OS_RELEASE=tags/lf-5.15.71-2.2.2
 MKIMAGE_GIT_URI=https://github.com/nxp-imx/imx-mkimage
 MKIMAGE_RELEASE=tags/lf-5.15.71-2.2.2
 SECO_HTTP_URI=https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/imx-seco-5.9.0.bin
@@ -30,16 +44,17 @@ LLC_FILE_URI="NXP SAF5400 BSP v0.15 (linux-roadlink_evk2.0-v0.15.tgz:bsp/v2x-src
 
 ROOTDIR=`pwd`
 
-COMPONENTS="atf uboot mkimage seco scfw linux safsdio llc"
+COMPONENTS="atf uboot optee-os mkimage seco scfw linux safsdio llc"
 mkdir -p build
 dlfailed=0
 for i in $COMPONENTS; do
 	if [[ ! -d ${ROOTDIR}/build/$i ]]; then
-		GIT_URI_VAR=${i^^}_GIT_URI
-		RELEASE_VAR=${i^^}_RELEASE
-		HTTP_URI_VAR=${i^^}_HTTP_URI
-		FILE_VAR=${i^^}_FILE
-		FILE_URI_VAR=${i^^}_FILE_URI
+		i_sane=${i//-/_}
+		GIT_URI_VAR=${i_sane^^}_GIT_URI
+		RELEASE_VAR=${i_sane^^}_RELEASE
+		HTTP_URI_VAR=${i_sane^^}_HTTP_URI
+		FILE_VAR=${i_sane^^}_FILE
+		FILE_URI_VAR=${i_sane^^}_FILE_URI
 
 		if [[ -n ${!GIT_URI_VAR} ]]; then
 			echo "Fetching $i from Git ..."
@@ -55,6 +70,8 @@ for i in $COMPONENTS; do
 
 				if [ $? -ne 0 ]; then
 					echo "Warning: Failed to checkout $i release ${!RELEASE_VAR}!"
+					cd "${ROOTDIR}"
+					rm -rf "${ROOTDIR}/build/$i"
 					dlfailed=1
 					continue
 				fi
@@ -222,7 +239,8 @@ cp -v build_mx8dxl_${SCFW_R,,}/scfw_tcm.bin "${ROOTDIR}/images/mx8dxl-sr-som-scf
 
 # Build ATF
 cd "${ROOTDIR}/build/atf"
-make -j$(nproc) CROSS_COMPILE="$CROSS_COMPILE" PLAT=imx8dxl bl31
+make PLAT=imx8dxl clean
+make -j$(nproc) CROSS_COMPILE="$CROSS_COMPILE" PLAT=imx8dxl SPD=opteed bl31
 cp -v build/imx8dxl/release/bl31.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
 # Build u-boot
@@ -248,8 +266,87 @@ make -j$(nproc) CROSS_COMPILE="$CROSS_COMPILE"
 cp -v u-boot.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 cp -v spl/u-boot-spl.bin "${ROOTDIR}/build/mkimage/iMX8DXL/"
 
+# Build optee-os
+do_build_opteeos() {
+	local PLATFORM=imx-mx8dxlevk
+	local TEE_CORE_LOG_LEVEL=2
+
+	rm -rf ${ROOTDIR}/images/optee
+	mkdir -p ${ROOTDIR}/images/optee
+
+	# build optee devkit
+	cd $ROOTDIR/build/optee-os/
+	rm -rf out
+	make -j$(nproc) \
+		ARCH=arm \
+		PLATFORM=${PLATFORM} \
+		CROSS_COMPILE64=${CROSS_COMPILE} \
+		CROSS_COMPILE32=${CROSS_COMPILE32} \
+		CFG_ARM64_core=y \
+		ta_dev_kit
+
+	# TODO: build external TAs
+
+	# build optee os
+	cd ${ROOTDIR}/build/optee-os/
+
+	# REE_FS OPTIONS:
+	# - CFG_RPMB_FS:
+	#   Enable or disable RPMB Filesystem Feature.
+	# - CFG_RPMB_WRITE_KEY:
+	#   Disabled by default to avoid accidental programming of key,
+	#   enable if optee-os shall use rpmb for secure storage.
+	#   Only required during first use.
+	if [ "x$OPTEE_STORAGE_PRIVATE_REE" = "xtrue" ]; then
+		REE_FS="CFG_REE_FS=y"
+	else
+		REE_FS="CFG_REE_FS=n"
+	fi
+
+	# RPMB_FS OPTIONS:
+	# - CFG_RPMB_FS:
+	#   Enable or disable RPMB Filesystem Feature.
+	# - CFG_RPMB_FS_DEV_ID:
+	#   Set MMC device ID of eMMC.
+	# - CFG_RPMB_WRITE_KEY:
+	#   Disabled by default to avoid accidental programming of key,
+	#   enable if optee-os shall use rpmb for secure storage.
+	#   Only required during first use.
+	if [ "x$OPTEE_STORAGE_PRIVATE_RPMB" = "xtrue" ]; then
+		RPMB_FS="CFG_RPMB_FS=y CFG_RPMB_FS_DEV_ID=0 CFG_RPMB_WRITE_KEY=n"
+	else
+		RPMB_FS="CFG_RPMB_FS=n"
+	fi
+
+	# In-Tree Early TA's
+	# - avb: for optee_rpmb u-boot command
+	IN_TREE_EARLY_TAS="avb/023f8f1a-292a-432b-8fc4-de8471358067"
+
+	# External Early TA's
+	EXTERNAL_EARLY_TAS=""
+
+	make -j$(nproc) \
+		ARCH=arm \
+		PLATFORM=$PLATFORM \
+		CROSS_COMPILE64=${CROSS_COMPILE} \
+		CROSS_COMPILE32=${CROSS_COMPILE32} \
+		CFG_ARM64_core=y \
+		CFG_TEE_CORE_LOG_LEVEL=$TEE_CORE_LOG_LEVEL \
+		$REE_FS \
+		$RPMB_FS \
+		CFG_IN_TREE_EARLY_TAS="$IN_TREE_EARLY_TAS" \
+		CFG_EARLY_TA=y \
+		EARLY_TA_PATHS="$EXTERNAL_EARLY_TAS"
+
+	cp out/arm-plat-imx/core/tee-pager_v2.bin ${ROOTDIR}/images/optee
+}
+
+echo "Building optee-os"
+do_build_opteeos
+
 # Assemble bootable image
 cd "${ROOTDIR}/build/mkimage"
+cp -v ${ROOTDIR}/images/optee/tee-pager_v2.bin ./iMX8DXL/tee.bin
 make SOC=iMX8DXL REV=${SECO_R^^} flash_spl
 cp -v "${ROOTDIR}/build/mkimage/iMX8DXL/flash.bin" "${ROOTDIR}/images/uboot.bin"
 
