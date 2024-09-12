@@ -3,7 +3,7 @@
 ### Options
 : ${CROSS_COMPILE:=aarch64-linux-gnu-}
 : ${CROSS_COMPILE32:=arm-linux-gnueabihf-}
-: ${SOC_REVISION:=A0}
+: ${SOC_REVISION:=B0}
 : ${IMAGE_SIZE_MiB:=1000}
 : ${GATEWAY_REVISION:=1.1}
 : ${SOM_REVISION:=2.1}
