@@ -537,3 +537,26 @@ Therefore in order for the build directory to be owned by current user, `-u 0 -g
 
 ## Build with host tools
 Simply running ./runme.sh, it will check for required tools, clone and build images and place results in images/ directory.
+
+# Known Issues
+
+## Sporadic failure to access eMMC after reboot
+
+eMMC access may fail after reboot with messages similar to this:
+
+    => boot
+    Card did not respond to voltage select! : -110
+    Card did not respond to voltage select! : -110
+
+To improve the situation patches were added to U-Boot and Linux supporting eMMC reset,
+and the eMMC internal efuse supporting reset input must be blown - i.e. from Linux:
+
+    # read configuration
+    mmc extcsd read /dev/mmcblk0 | grep RST
+    # H/W Reset Function [RST_N_FUNCTION]: 0x00
+    # if value was 0x00, reset can be enabled ONCE:
+    mmc hwreset enable /dev/mmcblk0
+
+    # read back new configuration
+    mmc extcsd read /dev/mmcblk0 | grep RST
+    # H/W Reset Function [RST_N_FUNCTION]: 0x01
