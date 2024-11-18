@@ -115,7 +115,10 @@ for i in $COMPONENTS; do
 					echo "${!FILE_URI_VAR}"
 				fi
 
-				dlfailed=1
+				# safsdio and llc are optional
+				if [[ $i != safsdio ]] && [[ $i != llc ]]; then
+					dlfailed=1
+				fi
 				continue
 			fi
 		fi
