@@ -1,7 +1,7 @@
-From 93eee0ee13763b531968ed47da8faee38b490502 Mon Sep 17 00:00:00 2001
+From b6ebad3839ad8d1703d9ab0eb0b3df7332f861ec Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Mon, 3 Nov 2025 10:56:06 +0100
-Subject: [PATCH 2/2] arm64: dts: imx8dxl: Add SolidRun SoM and HummingBoard
+Subject: [PATCH 3/3] arm64: dts: imx8dxl: Add SolidRun SoM and HummingBoard
 
 Add support for the SolidRun i.MX8DXL System-on-Module (revision 2.1)
 and its corresponding evaluation carrier board, the HummingBoard
@@ -48,14 +48,13 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
 ---
  arch/arm64/boot/dts/freescale/Makefile        |   2 +
  .../imx8dxl-hummingboard-telematics.dts       | 536 ++++++++++++++++++
- .../boot/dts/freescale/imx8dxl-sr-som.dtsi    | 460 +++++++++++++++
- .../boot/dts/freescale/imx8mp-sr-som.dtsi     |   1 -
- 4 files changed, 998 insertions(+), 1 deletion(-)
+ .../boot/dts/freescale/imx8dxl-sr-som.dtsi    | 458 +++++++++++++++
+ 3 files changed, 996 insertions(+)
  create mode 100644 arch/arm64/boot/dts/freescale/imx8dxl-hummingboard-telematics.dts
  create mode 100644 arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
 
 diff --git a/arch/arm64/boot/dts/freescale/Makefile b/arch/arm64/boot/dts/freescale/Makefile
-index 700bab4d3e600..12b946c08400b 100644
+index 700bab4d3e60..12b946c08400 100644
 --- a/arch/arm64/boot/dts/freescale/Makefile
 +++ b/arch/arm64/boot/dts/freescale/Makefile
 @@ -111,6 +111,8 @@ dtb-$(CONFIG_ARCH_MXC) += imx8dxl-evk.dtb
@@ -69,7 +68,7 @@ index 700bab4d3e600..12b946c08400b 100644
  dtb-$(CONFIG_ARCH_MXC) += imx8dxp-tqma8xdps-mb-smarc-2.dtb
 diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-hummingboard-telematics.dts b/arch/arm64/boot/dts/freescale/imx8dxl-hummingboard-telematics.dts
 new file mode 100644
-index 0000000000000..ad2371f3c2632
+index 000000000000..ae23eade6424
 --- /dev/null
 +++ b/arch/arm64/boot/dts/freescale/imx8dxl-hummingboard-telematics.dts
 @@ -0,0 +1,536 @@
@@ -172,7 +171,8 @@ index 0000000000000..ad2371f3c2632
 +};
 +
 +&eqos {
-+	phy-mode = "rgmii-id";
++	/* delays are added by connected ethernet-switch cpu port */
++	phy-mode = "rgmii";
 +	pinctrl-0 = <&eqos_pins>;
 +	pinctrl-names = "default";
 +	status = "okay";
@@ -381,14 +381,13 @@ index 0000000000000..ad2371f3c2632
 +		compatible = "nxp,sja1110a";
 +		reg = <0>;
 +		reset-gpios = <&lsio_gpio4 3 GPIO_ACTIVE_LOW>;
-+		spi-cpol;
 +		spi-max-frequency = <4000000>;
 +
 +		ethernet-ports {
 +			#address-cells = <1>;
 +			#size-cells = <0>;
 +
-+			/* to 100Base-TX on connector J26 */
++			/* 100Base-TX on connector J26 */
 +			port@1 {
 +				reg = <0x1>;
 +				label = "lan1";
@@ -397,7 +396,7 @@ index 0000000000000..ad2371f3c2632
 +				status = "okay";
 +			};
 +
-+			/* to CPU */
++			/* CPU */
 +			port@2 {
 +				reg = <0x2>;
 +				ethernet = <&eqos>;
@@ -540,7 +539,7 @@ index 0000000000000..ad2371f3c2632
 +				#address-cells = <1>;
 +				#size-cells = <0>;
 +
-+				/* to 100Base-TX on connector J26 */
++				/* 100Base-TX on connector J26 */
 +				switch_port1_base_tx_phy: ethernet-phy@1 {
 +					reg = <0x1>;
 +				};
@@ -611,10 +610,10 @@ index 0000000000000..ad2371f3c2632
 +};
 diff --git a/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
 new file mode 100644
-index 0000000000000..d72e960c3e5e3
+index 000000000000..93a0eb4d7f77
 --- /dev/null
 +++ b/arch/arm64/boot/dts/freescale/imx8dxl-sr-som.dtsi
-@@ -0,0 +1,460 @@
+@@ -0,0 +1,458 @@
 +// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 +/*
 + * Copyright 2022-2026 Josua Mayer <josua@solid-run.com>
@@ -662,7 +661,6 @@ index 0000000000000..d72e960c3e5e3
 +		regulator-name = "1v2";
 +		pinctrl-0 = <&regulator_1_2_pins>;
 +		pinctrl-names = "default";
-+		regulator-always-on;
 +		regulator-max-microvolt = <1200000>;
 +		regulator-min-microvolt = <1200000>;
 +		gpio = <&lsio_gpio1 13 GPIO_ACTIVE_HIGH>;
@@ -674,7 +672,6 @@ index 0000000000000..d72e960c3e5e3
 +		regulator-name = "1v6";
 +		pinctrl-0 = <&regulator_1_6_pins>;
 +		pinctrl-names = "default";
-+		regulator-always-on;
 +		regulator-max-microvolt = <1600000>;
 +		regulator-min-microvolt = <1600000>;
 +		vin-supply = <&v_1_8>;
@@ -1075,18 +1072,6 @@ index 0000000000000..d72e960c3e5e3
 +	vqmmc-supply = <&v_1_8>;
 +	status = "okay";
 +};
-diff --git a/arch/arm64/boot/dts/freescale/imx8mp-sr-som.dtsi b/arch/arm64/boot/dts/freescale/imx8mp-sr-som.dtsi
-index 3cdb0bc0ab721..16d4280a1ae65 100644
---- a/arch/arm64/boot/dts/freescale/imx8mp-sr-som.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mp-sr-som.dtsi
-@@ -10,7 +10,6 @@ / {
- 	compatible = "solidrun,imx8mp-sr-som", "fsl,imx8mp";
- 
- 	chosen {
--		bootargs = "earlycon=ec_imx6q,0x30890000,115200";
- 		stdout-path = &uart2;
- 	};
- 
 -- 
 2.51.0
 
