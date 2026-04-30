@@ -1,0 +1,3 @@
+# sja1110a ethernet switch port naming rules
+ACTION=="add", SUBSYSTEM=="net", KERNELS=="spi0.0", DRIVERS=="sja1105", ATTR{phys_port_name}=="p1", NAME="lan1"
+ACTION=="add", SUBSYSTEM=="net", KERNELS=="spi0.0", DRIVERS=="sja1105", ATTR{phys_port_name}=="p10", NAME="trx6"

@@ -1,7 +1,7 @@
-From 0a6bea5e7c705406fc0fb8ff1c6411b72ba8e954 Mon Sep 17 00:00:00 2001
+From 3590ab55da052bc43269f4a4f4cf4bcffc2ee0d9 Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
 Date: Tue, 4 Nov 2025 12:35:03 +0100
-Subject: [PATCH 2/3] dt-bindings: arm: fsl: Add SolidRun i.MX8DXL SoM and
+Subject: [PATCH 1/2] dt-bindings: arm: fsl: Add SolidRun i.MX8DXL SoM and
  HummingBoard
 
 Add binding for the SolidRun i.MX8DXL based System on Module, and the
@@ -14,10 +14,10 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/arm/fsl.yaml b/Documentation/devicetree/bindings/arm/fsl.yaml
-index 5716d701292c..c7a885159318 100644
+index 0023cd1268075..17cd47e8efce8 100644
 --- a/Documentation/devicetree/bindings/arm/fsl.yaml
 +++ b/Documentation/devicetree/bindings/arm/fsl.yaml
-@@ -1376,6 +1376,13 @@ properties:
+@@ -1394,6 +1394,13 @@ properties:
                - fsl,imx8dxl-evk           # i.MX8DXL EVK Board
            - const: fsl,imx8dxl
  

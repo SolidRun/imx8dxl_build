@@ -34,7 +34,7 @@ SCFW_FILE=IMX-SCFW-PORTING-KIT-1.15.0.tar.gz
 SCFW_FILE_URI="https://www.nxp.com/webapp/Download?colCode=L6.1.22_2.0.0_SCFWKIT-1.15.0&appType=license"
 SCFW_RELEASE=1.15.0
 LINUX_GIT_URI=https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
-LINUX_RELEASE=v7.0-rc2
+LINUX_RELEASE=v7.1-rc1
 SAFSDIO_FILE=saf-sdio_RFP1.0.4.tgz
 SAFSDIO_FILE_URI="NXP SAF5400 BSP v0.15 (linux-roadlink_evk2.0-v0.15.tgz:bsp/v2x-src/saf5x00)"
 LLC_FILE=llc_RFP2.5.tgz
