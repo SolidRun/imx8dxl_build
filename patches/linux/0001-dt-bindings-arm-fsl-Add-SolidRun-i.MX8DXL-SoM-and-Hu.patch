@@ -1,6 +1,6 @@
-From 3590ab55da052bc43269f4a4f4cf4bcffc2ee0d9 Mon Sep 17 00:00:00 2001
+From fc77b84adc7c6990150563793f8b7718463e98fa Mon Sep 17 00:00:00 2001
 From: Josua Mayer <josua@solid-run.com>
-Date: Tue, 4 Nov 2025 12:35:03 +0100
+Date: Sun, 24 May 2026 14:03:09 +0200
 Subject: [PATCH 1/2] dt-bindings: arm: fsl: Add SolidRun i.MX8DXL SoM and
  HummingBoard
 
@@ -14,7 +14,7 @@ Signed-off-by: Josua Mayer <josua@solid-run.com>
  1 file changed, 7 insertions(+)
 
 diff --git a/Documentation/devicetree/bindings/arm/fsl.yaml b/Documentation/devicetree/bindings/arm/fsl.yaml
-index 0023cd1268075..17cd47e8efce8 100644
+index 0023cd126807..17cd47e8efce 100644
 --- a/Documentation/devicetree/bindings/arm/fsl.yaml
 +++ b/Documentation/devicetree/bindings/arm/fsl.yaml
 @@ -1394,6 +1394,13 @@ properties:
