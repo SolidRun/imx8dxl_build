@@ -288,6 +288,43 @@ A systemd unit called `lte-power` is included in this image, but disabled by def
 After the modem has booted, it will show up as `wwan0` and needs to be supplied with the APN name and SIM PIN (if present).
 Either use a suitable network manager for that or just use `mmcli` from the modemmanager package.
 
+## WiFi
+
+The carrier board features a WiFi module. For connecting to a WPA2 protected network:
+
+Create `/etc/systemd/network/20-wlan0-dhcp.network` file with below content:
+
+```plain
+[Match]
+Name=wlan0
+
+[Link]
+RequiredForOnline=routable
+
+[Network]
+DHCP=yes
+IgnoreCarrierLoss=3s
+```
+
+Reload systemd-networkd configuration:
+
+```sh
+networkctl reload
+```
+
+Configure wpa_supplicant:
+
+```sh
+ wpa_passphrase "your-ssid" "your-passphrase" > /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+cat /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+```
+
+Finally permanently enable wpa_supplicant system service:
+
+```sh
+systemctl enable --now wpa_supplicant@wlan0.service
+```
+
 ## Configure Boot Mode DIP Switch
 
 This table indicates valid boot-modes selectable via the DIP switch S1 on the Molex Carrier.
