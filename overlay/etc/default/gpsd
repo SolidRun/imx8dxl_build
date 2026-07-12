@@ -6,5 +6,5 @@
 # - /dev/ttyLP2: gps uart when not using linux gnss driver (fall-back)
 #
 DEVICES="/dev/pps0 /dev/gnss0 /dev/ttyLP2"
-GPSD_OPTIONS="-s 38400 -n"
+GPSD_OPTIONS="-s 38400 -f 8N1 -n"
 USBAUTO="false"
