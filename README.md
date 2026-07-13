@@ -325,6 +325,163 @@ Finally permanently enable wpa_supplicant system service:
 systemctl enable --now wpa_supplicant@wlan0.service
 ```
 
+## PtP Master
+
+Due to SoM integrated GPS module with 1PPS interrupt routed, the system can act as a PtP grandmaster.
+
+By default gpsd is configured to own the 1pps device, causing notable userspace jitter and root distance of 2.5ms and higher.
+For a much lower root distance of 125ns modify gpsd and chronyd configuration files:
+
+```diff
+diff --git a/overlay/etc/chrony/chrony.conf b/overlay/etc/chrony/chrony.conf
+index 42b91d7..104e4c7 100644
+--- a/overlay/etc/chrony/chrony.conf
++++ b/overlay/etc/chrony/chrony.conf
+@@ -1,9 +1,9 @@
+ pool 2.debian.pool.ntp.org iburst
+ 
+ # time offset as measured by gpsd at 38400 baudrate
+-refclock SHM 1 refid GPS poll 1 offset 0.1 delay 0.5 noselect
++refclock SHM 0 refid GPS poll 1 offset 0.1 delay 0.5 noselect
+ 
+-refclock SHM 0 refid PPS poll 1 lock GPS prefer precision 1e-9
++refclock PPS /dev/pps0 refid PPS poll 0 lock GPS prefer
+ 
+ refclock SHM 2 refid PTP precision 1e-9
+ 
+diff --git a/overlay/etc/default/gpsd b/overlay/etc/default/gpsd
+index 8a48798..dbdfc62 100644
+--- a/overlay/etc/default/gpsd
++++ b/overlay/etc/default/gpsd
+@@ -1,10 +1,8 @@
+ #
+ # Devices:
+-# - /dev/pps0: pps from gpio
+-#   Note: Must be specified unless gps uart device is "ttyAMA0" (RaspberryPi)
+ # - /dev/gnss0: gps uart when using linux gnss driver
+ # - /dev/ttyLP2: gps uart when not using linux gnss driver (fall-back)
+ #
+-DEVICES="/dev/pps0 /dev/gnss0 /dev/ttyLP2"
++DEVICES="/dev/ttyLP2"
+ GPSD_OPTIONS="-s 38400 -f 8N1 -n"
+ USBAUTO="false"
+```
+
+Then restart both services:
+
+```sh
+systemctl restart gpsd
+systemctl restart chronyd
+```
+
+Confirm chronyd established 1pps as best clock source:
+
+```sh
+chronyc sources
+```
+
+```plain
+MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+===============================================================================
+#? GPS                           0   1   377     2    -15ms[  -15ms] +/-  254ms
+#* PPS                           0   0   377     0  -1191ns[-1337ns] +/-  125ns
+#? PTP                           0   4     0     -     +0ns[   +0ns] +/-    0ns
+^- 139-162-187-236.ip.linod>     2   6    75    77  +5827us[+5828us] +/-   23ms
+^- dominus.von-oppen.com         2   6    75    76   -885us[ -884us] +/-   29ms
+^- node-4.infogral.is            2   6    75    77   +729us[ +730us] +/- 6536us
+^- ethel.0b.yt                   3   6    75    76   -330us[ -328us] +/-   28ms
+```
+
+If PPS line starts with "#*" then the time source is working as intended.
+
+Install ptp tools:
+
+```sh
+apt-get install linuxptp
+```
+
+Bridge system time to lan port:
+
+```sh
+phc2sys -s CLOCK_REALTIME -c /dev/ptp0 -O 0 -m -r
+```
+
+This command is rather verbose and will settle with offsets of +-3.5us 90% of the time.
+Considering every synchronisation has to pass through spi bus this meets expectations.
+Userspace jitter generates some higher outliers.
+
+However over time the ptp clock inside the ethernet switch (with lan port) will stay close enough to system time.
+
+Configure lan port for multicast so it can monitor the ptp packets:
+
+```sh
+ip link set lan1 allmulticast on
+```
+
+Finally start the ptp master process:
+
+```sh
+ptp4l -i lan1 -p /dev/ptp0 -i lan1 -E -2 -H -m
+```
+
+This uses L2 (IEEE 802.3) to work with consumer ethernet switches along the path.
+
+Another device on the network can now sync its own ptp clock with the grandmaster:
+
+```
+ptp4l -p /dev/ptp0 -i eth0 -m -s -2 -E
+```
+
+In case of success the grandmaster will be detected and regular syncs reported, e.g.:
+
+```plain
+ptp4l[39672.826]: selected /dev/ptp0 as PTP clock
+ptp4l[39672.858]: port 1 (eth0): INITIALIZING to LISTENING on INIT_COMPLETE
+ptp4l[39672.858]: port 0 (/var/run/ptp4l): INITIALIZING to LISTENING on INIT_COMPLETE
+ptp4l[39672.858]: port 0 (/var/run/ptp4lro): INITIALIZING to LISTENING on INIT_COMPLETE
+ptp4l[39673.502]: port 1 (eth0): new foreign master 6286b7.fffe.adfad1-1
+ptp4l[39677.503]: selected best master clock 6286b7.fffe.adfad1
+ptp4l[39677.503]: port 1 (eth0): LISTENING to UNCALIBRATED on RS_SLAVE
+ptp4l[39679.503]: master offset     207498 s0 freq  -11697 path delay       933
+ptp4l[39680.503]: master offset     213876 s1 freq   -5319 path delay       933
+ptp4l[39681.503]: master offset      -2855 s2 freq   -8174 path delay       933
+ptp4l[39681.503]: port 1 (eth0): UNCALIBRATED to SLAVE on MASTER_CLOCK_SELECTED
+ptp4l[39682.503]: master offset       1974 s2 freq   -4202 path delay       933
+ptp4l[39683.503]: master offset         80 s2 freq   -5504 path delay      3105
+ptp4l[39684.503]: master offset       9947 s2 freq   +4387 path delay      3105
+ptp4l[39685.504]: master offset       -212 s2 freq   -2787 path delay      3200
+ptp4l[39686.504]: master offset      -4666 s2 freq   -7305 path delay      3220
+ptp4l[39687.504]: master offset      -3260 s2 freq   -7299 path delay      3210
+ptp4l[39688.504]: master offset        141 s2 freq   -4876 path delay      3200
+ptp4l[39689.504]: master offset       2751 s2 freq   -2224 path delay      3152
+ptp4l[39690.504]: master offset       1246 s2 freq   -2903 path delay      3235
+ptp4l[39691.504]: master offset      -1555 s2 freq   -5330 path delay      3288
+ptp4l[39692.504]: master offset       1132 s2 freq   -3110 path delay      3288
+ptp4l[39693.505]: master offset       2053 s2 freq   -1849 path delay      3288
+ptp4l[39694.505]: master offset      -1203 s2 freq   -4489 path delay      3288
+ptp4l[39695.505]: master offset         27 s2 freq   -3620 path delay      3288
+```
+
+To integrate with chronyd, add to `/etc/chrony.conf`:
+
+```plain
+refclock PHC /dev/ptp0 poll 0 prefer refid PTP
+```
+
+Confirm chrony used the ptp source:
+
+```sh
+chronyc sources
+```
+
+```plain
+MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+===============================================================================
+#* PTP                           0   0   377     0     -1ns[ +855ns] +/-   14ns
+^- OpenWrt.rlan                  3   6    77    15  +1495us[+1491us] +/-   79ms
+^- telesto.host.static.dont>     2   6    77    15  -1945us[-1947us] +/-   39ms
+```
+
 ## Configure Boot Mode DIP Switch
 
 This table indicates valid boot-modes selectable via the DIP switch S1 on the Molex Carrier.
